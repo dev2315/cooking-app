@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#f3f3f8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Smart Kitchen Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2dc;--ink:#2e312e;--ink-soft:#5f655a;--accent:#bf4521;--accent-soft:#e8ccd6;
+  --line:#d5dbba;--surface:#f9fbef;--white:#fff;--dark:#1e201e;--success:#4f7a4b;
+  --display:ui-rounded,'SF Pro Rounded',-apple-system,'Fredoka',system-ui,sans-serif;--body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Nunito',system-ui,sans-serif;
+  --r-pill:28px;--r-card:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#d9deC4;font-family:var(--body);color:var(--ink);display:flex;justify-content:center;align-items:center}
+#phone{position:relative;width:100%;max-width:430px;height:100%;max-height:900px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:520px){#phone{border-radius:36px;box-shadow:0 20px 60px rgba(46,49,46,.25);height:min(900px,96vh)}}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.on{display:flex;animation:in .25s ease-out}
+.screen.dark{background:var(--dark);color:var(--white)}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-weight:600;font-size:16px;flex:none}
+.status b{font-weight:800;font-size:12px;letter-spacing:.08em;margin-right:8px}
+.status i{display:inline-block;width:22px;height:11px;border-radius:3.5px;background:currentColor;vertical-align:middle}
+.body{flex:1;overflow-y:auto;padding:8px 24px 16px;display:flex;flex-direction:column;gap:16px;min-height:0}
+.bottom{flex:none;padding:0 24px max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+h1,h2,h3{font-family:var(--display);font-weight:600}
+.eyebrow{font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.label{font-weight:800;font-size:12px;letter-spacing:.08em;color:var(--ink-soft);padding-top:8px;text-transform:uppercase}
+button,a.btn{font:inherit;color:inherit;border:0;background:none;cursor:pointer;text-align:left}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.press{transition:transform .12s,opacity .12s,background .12s}
+.press:active{transform:scale(.97);opacity:.9}
+.btn{display:flex;align-items:center;justify-content:center;height:56px;border-radius:var(--r-pill);padding:0 24px;font-weight:600;font-size:17px;text-align:center}
+.btn.p{background:var(--accent);color:#fff}.btn.s{border:1.5px solid var(--ink);color:var(--ink)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.row{display:flex;gap:12px;align-items:center}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r-card)}
+.icon-btn{width:44px;height:44px;border-radius:22px;background:var(--white);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.hdr{display:flex;gap:12px;align-items:center;height:48px;flex:none}
+.hdr h2{font-size:22px;flex:1}
+/* home */
+.greet{display:flex;justify-content:space-between;align-items:center}
+.greet h1{font-size:30px;line-height:1.1;margin-top:4px}
+.avatar{width:44px;height:44px;border-radius:22px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent)}
+.pill-timer{background:var(--accent-soft);border-radius:16px;padding:12px 16px;display:flex;gap:12px;align-items:center;font-weight:600;font-size:15px;width:100%}
+.pill-timer svg{font-size:20px;color:var(--accent)}
+.voice-card{background:var(--ink);color:#fff;border-radius:28px;padding:16px 20px;display:flex;gap:16px;align-items:center;width:100%}
+.voice-card .eyebrow{color:var(--accent-soft)}
+.voice-card h3{font-size:22px;line-height:26px;margin:8px 0}
+.voice-card small{color:var(--accent-soft);font-weight:600;font-size:13px}
+.mic-ring{width:88px;height:88px;border-radius:44px;border:3px solid var(--accent-soft);display:flex;align-items:center;justify-content:center;flex:none}
+.mic-orb{width:68px;height:68px;border-radius:34px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff}
+.mic-ring.live .mic-orb{animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,204,214,.6)}50%{box-shadow:0 0 0 14px rgba(232,204,214,0)}}
+.quick{display:flex;gap:12px}
+.quick>button{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+.qi{width:40px;height:40px;border-radius:20px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px}
+.quick b{font-size:16px;display:block}.quick span{font-weight:800;font-size:12px;letter-spacing:.08em;color:var(--ink-soft)}
+.recipe{display:flex;gap:16px;align-items:center;padding:12px;width:100%}
+.recipe .ph{width:72px;height:72px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:36px;flex:none}
+.recipe b{font-size:17px;display:block}.recipe small{font-weight:700;font-size:13px;letter-spacing:.04em;color:var(--ink-soft);display:block;margin:6px 0}
+.tag{display:inline-block;background:var(--accent);color:#fff;font-weight:800;font-size:12px;letter-spacing:.08em;padding:4px 12px;border-radius:12px}
+.bar{background:var(--ink);color:#fff;border-radius:32px;height:64px;display:flex;align-items:center;gap:12px;padding:0 20px 0 16px;width:100%}
+.bar .orb{width:48px;height:48px;border-radius:24px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.bar p{flex:1;font-weight:600;font-size:15px;line-height:22px;min-width:0}
+.wave{display:flex;gap:4px;align-items:center;height:28px}
+.wave span{width:3px;border-radius:2px;background:var(--accent-soft);height:10px}
+.wave.live span{animation:wv .9s ease-in-out infinite}
+.wave span:nth-child(2){animation-delay:.1s}.wave span:nth-child(3){animation-delay:.2s}.wave span:nth-child(4){animation-delay:.3s}.wave span:nth-child(5){animation-delay:.4s}
+@keyframes wv{0%,100%{height:8px}50%{height:26px}}
+/* scan */
+.cam{position:relative;height:100%;min-height:300px;border-radius:28px;overflow:hidden;background:var(--ink);border:2px solid rgba(255,255,255,.25);flex:1}
+.cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.cam video.rear{transform:none}
+.cam .boxes{position:absolute;inset:0}
+.det{position:absolute;border:2px dashed #fff;border-radius:12px;transition:all .25s}
+.det span{position:absolute;left:-2px;bottom:100%;margin-bottom:2px;background:#fff;color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.08em;padding:4px 8px;border-radius:8px;white-space:nowrap}
+.status-pill{position:absolute;left:14px;top:14px;background:rgba(26,28,26,.75);color:#fff;font-weight:600;font-size:13px;padding:8px 12px;border-radius:14px;max-width:90%}
+.nocam{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;color:#fff}
+.nocam p{font-size:14px;line-height:1.4;color:var(--accent-soft)}
+.ctrls{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 8px 0}
+.cbtn{display:flex;flex-direction:column;align-items:center;gap:8px;color:#fff;font-weight:800;font-size:12px;letter-spacing:.08em;min-width:62px}
+.cbtn i{width:56px;height:56px;border-radius:28px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:24px;font-style:normal}
+.cbtn.act i{background:var(--accent)}
+.shutter{width:84px;height:84px;border-radius:42px;border:4px solid #fff;padding:6px}
+.shutter i{display:block;width:100%;height:100%;border-radius:50%;background:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 16px;font-weight:600;font-size:13px}
+.chip.on{background:var(--accent-soft);border-color:var(--accent-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+/* recipe detail */
+.hero{height:100px;border-radius:24px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:56px;flex:none}
+.rtitle{font-size:28px;line-height:1.15}
+.ing{padding:4px 16px}
+.ing li{list-style:none;display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-weight:600;font-size:16px}
+.ing li:last-child{border:0}
+.ing li span{flex:1}.ing li em{font-style:normal;font-size:13px;color:var(--ink-soft)}
+.ing li svg{color:var(--success);font-size:18px}
+.ing li.miss{color:var(--accent)}.ing li.miss svg,.ing li.miss em{color:var(--accent);font-weight:700;letter-spacing:.04em}
+.ing li.changed em{color:var(--accent);font-weight:700}
+/* voice adapt */
+.orb-wrap{height:180px;position:relative;flex:none;display:flex;align-items:center;justify-content:center}
+.orb-wrap i{position:absolute;border-radius:50%;background:var(--accent-soft);opacity:.7}
+.orb-wrap .r3{width:176px;height:176px;opacity:.5}.orb-wrap .r2{width:136px;height:136px;opacity:.8}
+.orb-wrap .o{width:96px;height:96px;background:var(--accent);opacity:1;display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-style:normal}
+.orb-wrap.live .r3{animation:rg 1.6s infinite}.orb-wrap.live .r2{animation:rg 1.6s .3s infinite}
+@keyframes rg{50%{transform:scale(1.1)}}
+.center{text-align:center}
+.said{padding:16px}.said p{font-weight:600;font-size:18px;line-height:26px;margin-top:8px;min-height:26px}
+.resp{background:var(--accent-soft);border-radius:var(--r-card);padding:16px;display:flex;flex-direction:column;gap:12px}
+.resp .head{display:flex;gap:8px;align-items:center}
+.resp .head svg{color:var(--accent);font-size:18px}
+.chg{display:flex;gap:12px;font-weight:600;font-size:15px;line-height:22px}.chg svg{color:var(--success);margin-top:2px;font-size:18px}
+/* cooking */
+.top{display:flex;gap:12px;align-items:center;flex:none}
+.top .t{flex:1;font-weight:800;font-size:12px;letter-spacing:.08em;color:var(--ink-soft)}
+.hint{background:var(--accent-soft);border-radius:16px;padding:14px 12px;display:flex;gap:8px;align-items:center;font-weight:800;font-size:12px;letter-spacing:.08em}
+.hint.live{background:var(--accent);color:#fff}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.track>div{height:100%;background:var(--accent);transition:width .4s}
+.now{background:var(--ink);color:#fff;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.now .eyebrow{color:var(--accent-soft)}
+.now h2{font-size:28px;line-height:34px}.now p{font-size:16px;line-height:23px;color:var(--accent-soft)}
+.cue{display:flex;gap:12px;align-items:center;padding:16px}
+.cue .ph{width:64px;height:64px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;flex:none}
+.cue .eyebrow{color:var(--ink-soft)}.cue p{font-weight:600;font-size:15px;line-height:22px;margin-top:4px}
+.timer-card{background:var(--accent-soft);border-radius:var(--r-card);padding:16px;display:flex;gap:12px;align-items:center;width:100%}
+.timer-card svg{font-size:26px;color:var(--accent)}
+.timer-card b{font-family:var(--display);font-size:30px;font-weight:600;display:block;line-height:1.1}
+.timer-card small{font-weight:600;font-size:13px;color:var(--ink-soft)}
+.pip{position:relative;width:88px;height:88px;border-radius:20px;overflow:hidden;background:var(--accent-soft);flex:none;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:44px}
+.pip video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.gfb{display:flex;gap:16px;align-items:center;padding:16px}
+.gfb .eyebrow{color:var(--accent)}.gfb h3{font-size:19px;line-height:1.25;margin:4px 0}.gfb small{font-weight:800;font-size:11px;letter-spacing:.08em;color:var(--ink-soft)}
+/* tasks */
+.alert{background:var(--accent);color:#fff;border-radius:22px;padding:16px;display:flex;gap:12px;align-items:center}
+.alert .bell{width:44px;height:44px;border-radius:22px;background:#fff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.alert p{font-weight:700;font-size:17px;line-height:25px}
+.task{padding:16px;display:flex;gap:12px;align-items:center}
+.task .st{width:44px;height:44px;border-radius:22px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.task.done .st{background:var(--success);color:#fff}
+.task .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}.task b{font-size:16px}
+.task .tr{height:6px;border-radius:3px;background:var(--line);overflow:hidden}.task .tr>div{height:100%;background:var(--accent)}.task.done .tr>div{background:var(--success)}
+.task small{font-weight:800;font-size:12px;letter-spacing:.08em;color:var(--ink-soft)}
+.task .tm{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}.task.done .tm{color:var(--success)}
+.task .x{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:22px;color:var(--ink-soft)}
+/* complete */
+.ok{width:120px;height:120px;border-radius:60px;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-size:56px;margin:50px auto 0}
+.stats{display:flex;gap:12px}.stats>div{flex:1;padding:16px 8px;text-align:center}.stats b{display:block;font-family:var(--display);font-size:22px;font-weight:600}.stats small{font-weight:800;font-size:11px;letter-spacing:.08em;color:var(--ink-soft)}
+.stars{display:flex;gap:6px;justify-content:center}.stars button{font-size:30px;color:var(--line);padding:6px}.stars button.on{color:var(--accent)}
+/* toast + captions */
+#cap{position:absolute;left:16px;right:16px;bottom:calc(112px + env(safe-area-inset-bottom));background:rgba(30,32,30,.94);color:#fff;border-radius:18px;padding:12px 16px;font-weight:600;font-size:14px;line-height:20px;z-index:20;display:none;pointer-events:none}
+#cap.on{display:block;animation:in .2s}
+#cap small{display:block;color:var(--accent-soft);font-weight:800;font-size:11px;letter-spacing:.08em;margin-bottom:2px}
+#mute{position:absolute;top:max(6px,env(safe-area-inset-top));right:12px;z-index:25;width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--ink);opacity:.0}
+.dark #mute{color:#fff}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ===== Tinted glass (Apple-style materials) ===== */
+svg.i.f{fill:currentColor;stroke:none}
+svg.i{stroke-width:2}
+#phone::before{content:"";position:absolute;inset:-15%;pointer-events:none;
+  background:radial-gradient(42% 30% at 12% 8%,rgba(191,69,33,.34),transparent 70%),
+             radial-gradient(40% 32% at 95% 30%,rgba(232,204,214,.95),transparent 70%),
+             radial-gradient(45% 30% at 8% 72%,rgba(79,122,75,.34),transparent 70%),
+             radial-gradient(40% 30% at 88% 92%,rgba(191,69,33,.2),transparent 70%)}
+.screen:not(.dark){background:transparent}
+.card,.icon-btn,.chip,.btn.s{background:rgba(255,255,255,.52);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(46,49,46,.04),0 8px 24px rgba(46,49,46,.09)}
+.btn.s{border-color:rgba(46,49,46,.55)}
+.chip.on{background:rgba(232,204,214,.62)}
+.pill-timer,.timer-card,.resp,.hint:not(.live){background:rgba(232,204,214,.58);-webkit-backdrop-filter:blur(24px) saturate(190%);backdrop-filter:blur(24px) saturate(190%);
+  border:1px solid rgba(255,255,255,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 8px 24px rgba(191,69,33,.1)}
+.voice-card,.bar,.now{background:rgba(46,49,46,.74);-webkit-backdrop-filter:blur(30px) saturate(160%);backdrop-filter:blur(30px) saturate(160%);
+  border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 14px 34px rgba(30,32,30,.28)}
+.alert,.hint.live{background:rgba(191,69,33,.84);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);
+  border:1px solid rgba(255,255,255,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 26px rgba(191,69,33,.3)}
+.btn.p{background:linear-gradient(180deg,#d4602f 0%,#bf4521 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 10px 22px rgba(191,69,33,.32)}
+.avatar,.qi,.recipe .ph,.cue .ph,.task .st,.hero{background:rgba(232,204,214,.62);box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
+.recipe .ph,.hero{background-size:cover;background-position:center}
+.photo svg{display:none}
+.hero{position:relative;height:150px;overflow:hidden;border:1px solid rgba(255,255,255,.7)}
+.hero.photo{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5),0 10px 26px rgba(46,49,46,.18)}
+.addphoto{position:absolute;right:10px;bottom:10px;display:flex;gap:6px;align-items:center;height:36px;padding:0 14px;border-radius:18px;color:var(--ink);font-weight:700;font-size:13px;
+  background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.75);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+.hero.photo .addphoto svg{display:block}
+.recipe .ph.photo{border-radius:16px}
+.dark .icon-btn,.cbtn i{background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.cbtn.act i{background:rgba(191,69,33,.85)}
+.status-pill{-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.2)}
+#cap{background:rgba(30,32,30,.72);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 12px 30px rgba(0,0,0,.25)}
+.bottom{background:linear-gradient(to top,rgba(238,242,220,.55),transparent)}
+.dark .bottom{background:none}
+.track{background:rgba(255,255,255,.55);box-shadow:inset 0 1px 2px rgba(46,49,46,.12)}
+.task .tr{background:rgba(213,219,186,.7)}
+@media(prefers-reduced-transparency:reduce){
+  .card,.icon-btn,.chip,.btn.s,.addphoto{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .pill-timer,.timer-card,.resp,.hint:not(.live){background:var(--accent-soft);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .voice-card,.bar,.now,#cap{background:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .alert,.hint.live{background:var(--accent);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+@media(prefers-contrast:more){.card,.chip,.icon-btn{border-color:var(--ink)}}
+
+
+/* ===== v2: tab bar, sheet, spacing polish ===== */
+.body{gap:14px;padding:8px 24px 20px}
+.bottom{gap:12px;padding-top:8px}
+.has-tabs .bottom{padding-bottom:10px}
+.label{padding-top:6px;margin-bottom:-4px}
+.greet .actions{display:flex;gap:10px;align-items:center}
+.hdr{margin-bottom:2px}
+.tabbar{flex:none;display:flex;gap:4px;margin:4px 16px max(14px,env(safe-area-inset-bottom));padding:6px;border-radius:32px;
+  background:rgba(255,255,255,.66);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
+  border:1px solid rgba(255,255,255,.75);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 30px rgba(46,49,46,.14)}
+.tab{position:relative;flex:1;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:26px;
+  font-weight:700;font-size:11px;letter-spacing:.02em;color:var(--ink-soft);text-align:center}
+.tab svg{font-size:22px}
+.tab.on{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(191,69,33,.32),inset 0 1px 0 rgba(255,255,255,.35)}
+.tab .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.tab.on .badge{background:#fff;color:var(--accent);border-color:var(--accent)}
+#sheet{position:absolute;inset:0;z-index:40;display:none;align-items:flex-end;background:rgba(30,32,30,.42);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+#sheet.on{display:flex;animation:in .2s}
+.sheet-card{width:100%;max-height:92%;overflow-y:auto;padding:12px 24px max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;
+  border-radius:28px 28px 0 0;background:rgba(249,251,239,.94);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,.8);box-shadow:0 -12px 40px rgba(30,32,30,.25)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);align-self:center;margin-bottom:4px}
+.sheet-card h2{font-size:24px}
+.sheet-card p.note{font-size:14px;line-height:21px;color:var(--ink-soft);font-weight:600}
+.field{width:100%;height:52px;border-radius:16px;border:1.5px solid var(--line);background:rgba(255,255,255,.8);padding:0 16px;font:600 16px var(--body);color:var(--ink)}
+.field:focus{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.state{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:16px;font-weight:700;font-size:14px;background:rgba(232,204,214,.58)}
+.state i{width:10px;height:10px;border-radius:5px;background:var(--ink-soft);flex:none}
+.state.ok i{background:var(--success)}.state.bad i{background:var(--accent)}
+.feat{display:flex;flex-direction:column;gap:8px;font-weight:600;font-size:14px;line-height:20px}
+.feat div{display:flex;gap:10px;align-items:flex-start}.feat svg{color:var(--success);margin-top:2px;font-size:16px}
+.gear{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative}
+.gear.on::after{content:"";position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:5px;background:var(--success);border:2px solid #fff;box-sizing:content-box}
+
+
+/* ===== v2.1: UX audit fixes (touch targets, type floor, icon consistency, a11y) ===== */
+.chip{min-height:44px;justify-content:center}
+.stars button{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.tab{font-size:12px}
+.tab .badge{font-size:12px;min-width:20px;height:20px}
+.stats small,.gfb small,#cap small,.task small{font-size:12px}
+svg.i.o{fill:none;stroke:currentColor;stroke-width:2}
+.press{touch-action:manipulation}
+.tab:focus-visible,.gear:focus-visible{outline-offset:-3px}
+@media(prefers-reduced-transparency:reduce){
+  .tabbar,.sheet-card{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+  #sheet{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+@media(max-height:520px){.bar{height:52px}.bar .orb{width:40px;height:40px}.tab{min-height:44px}.status{height:28px}.tabbar{margin-bottom:8px}}
+.sheet-card>*{flex-shrink:0}
+@media(max-height:620px){.orb-wrap{height:130px}.ok{margin-top:16px}.hero{height:110px}}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ===== v3: glass surfaces + soft-neumorphic controls ===== */
+.hs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -24px;padding:2px 24px}.hs::-webkit-scrollbar{display:none}.hs .chip{flex:none}
+.srch{display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:18px;color:var(--ink-soft);background:rgba(233,238,214,.7);box-shadow:inset 3px 3px 8px rgba(46,49,46,.14),inset -3px -3px 8px rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.5)}
+.srch svg{font-size:20px}.sin{flex:1;min-width:0;border:0;background:none;font:600 16px var(--body);color:var(--ink);outline:0;height:100%}
+.srch:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.field{background:rgba(233,238,214,.7);border:1px solid rgba(255,255,255,.5);box-shadow:inset 3px 3px 8px rgba(46,49,46,.14),inset -3px -3px 8px rgba(255,255,255,.85)}
+.seg{display:flex;gap:4px;padding:4px;border-radius:20px;background:rgba(233,238,214,.7);box-shadow:inset 2px 2px 6px rgba(46,49,46,.14),inset -2px -2px 6px rgba(255,255,255,.85)}
+.seg button{flex:1;min-height:44px;border-radius:16px;text-align:center;font-weight:700;font-size:14px;color:var(--ink-soft);padding:0 6px}
+.seg button.on{background:rgba(255,255,255,.92);color:var(--accent);box-shadow:4px 4px 10px rgba(46,49,46,.16),-3px -3px 8px rgba(255,255,255,.95)}
+.seg.dk{background:rgba(255,255,255,.1);box-shadow:inset 2px 2px 6px rgba(0,0,0,.35),inset -1px -1px 4px rgba(255,255,255,.08)}.seg.dk button{color:#e8ccd6}.seg.dk button.on{background:rgba(255,255,255,.2);color:#fff;box-shadow:3px 3px 8px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3)}
+.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 16px;border-radius:var(--r-card)}
+.srow b{display:block;font-size:16px}.srow small{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin-top:2px}.srow>span{flex:1}
+.sw{flex:none;position:relative;width:56px;height:32px;border-radius:16px;background:rgba(46,49,46,.1);box-shadow:inset 3px 3px 7px rgba(46,49,46,.22),inset -2px -2px 5px rgba(255,255,255,.8);transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:13px;background:linear-gradient(145deg,#fff,#e6eadb);box-shadow:3px 3px 6px rgba(46,49,46,.25),-1px -1px 3px rgba(255,255,255,.9);transition:transform .2s}
+.sw.on{background:rgba(191,69,33,.78)}.sw.on::after{transform:translateX(24px)}
+.prov{display:flex;gap:12px;align-items:center;padding:14px 16px;width:100%}.prov b{font-size:16px}.prov small{display:block;font-size:13px;line-height:18px;font-weight:600;color:var(--ink-soft);margin-top:4px}
+.prov .prow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.prov .tag{font-size:11px;padding:3px 9px}.prov .tag.soft{background:rgba(46,49,46,.62)}
+.prov.sel{border:1.5px solid var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 0 0 4px rgba(191,69,33,.14),0 10px 26px rgba(191,69,33,.16)}
+.pcard{padding:16px;display:flex;flex-direction:column;gap:12px}.pcard h3{font-size:17px}
+.phero{display:flex;gap:16px;align-items:center;padding:16px;background:rgba(255,255,255,.5)}
+.avatar.big{width:68px;height:68px;border-radius:34px;font:600 30px var(--display);flex:none;box-shadow:inset 3px 3px 8px rgba(255,255,255,.7),inset -3px -3px 8px rgba(191,69,33,.18),6px 6px 14px rgba(46,49,46,.14)}
+.avatar{border:0;padding:0;color:var(--accent);font-family:var(--display);font-weight:600}
+.note2{font-size:14px;line-height:21px;font-weight:600;color:var(--ink-soft)}
+.tag.warn{background:#8a2a14;margin-left:6px}.favon{color:var(--accent)}
+.aibtn{gap:10px;height:52px;font-size:16px}.aibtn svg{color:var(--accent);font-size:20px}
+.hrow{display:flex;gap:12px;align-items:center;padding:12px 16px}.hrow b{flex:1;font-size:16px}.hrow small{font-weight:800;font-size:12px;letter-spacing:.06em;color:var(--ink-soft)}
+.state a{color:var(--accent);font-weight:800}
+@media(prefers-reduced-transparency:reduce){.srch,.field,.seg{background:#eef2dc}.seg button.on{background:#fff}}
+
+/* ===== v4: ui-ux-pro-max pass — type, spacing, hierarchy, motion ===== */
+:root{
+  --accent-ink:#9c3417;--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+  --shadow-1:0 1px 2px rgba(46,49,46,.06),0 6px 18px rgba(46,49,46,.08);
+  --shadow-2:0 2px 4px rgba(46,49,46,.06),0 14px 32px rgba(46,49,46,.14);
+}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body,button,input{font-feature-settings:"kern","liga"}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.015em}
+p,small,.note2{text-wrap:pretty}
+.status,.tm,.stats b,.timer-card b,.hrow small,.recipe small{font-variant-numeric:tabular-nums}
+
+/* Type scale: one clear step between levels */
+.greet h1{font-size:32px;line-height:1.08;letter-spacing:-.025em;margin-top:6px}
+.rtitle{font-size:30px;line-height:1.12;letter-spacing:-.025em}
+.hdr h2{font-size:24px;letter-spacing:-.02em}
+.eyebrow,.label,.cbtn,.tag,.task small,.top .t{letter-spacing:.1em}
+.recipe b{font-size:18px;line-height:1.25;letter-spacing:-.01em}
+.recipe small{font-size:13px;font-weight:700;margin:4px 0 8px}
+.quick b{font-size:17px;line-height:1.2;letter-spacing:-.01em}
+.voice-card h3{font-size:24px;line-height:28px;margin:6px 0 8px}
+.btn{letter-spacing:-.01em}
+
+/* Spacing rhythm: related items sit closer than separate sections */
+.body{gap:var(--s4);padding:var(--s2) var(--s5) var(--s5);scroll-behavior:smooth;overscroll-behavior:contain;scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 18px),transparent)}
+.body::-webkit-scrollbar{display:none}
+.label{display:flex;align-items:center;gap:var(--s3);margin:var(--s3) 0 -6px;padding:0;color:var(--ink-soft)}
+.label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.chips{gap:var(--s2)}
+.card .eyebrow+*,.recipe small{margin-top:var(--s1)}
+.bottom{gap:var(--s3);padding-top:var(--s3)}
+.hdr{height:52px;margin-bottom:var(--s1)}
+
+/* Hierarchy: one strong primary, calmer secondary, soft tags */
+.tag{background:rgba(191,69,33,.12);color:var(--accent-ink);border:1px solid rgba(191,69,33,.18);font-size:12px;padding:4px 10px;border-radius:10px}
+.tag.warn{background:#8a2a14;color:#fff;border-color:transparent}
+.prov .tag:not(.soft){background:var(--accent);color:#fff;border-color:transparent}
+.prov .tag.soft{color:#fff;border-color:transparent}
+.dark .tag{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.2)}
+.chip{font-size:14px;padding:8px 16px;transition:background .2s,border-color .2s,transform .2s var(--spring),box-shadow .2s}
+.chip.on{color:var(--accent-ink);font-weight:700;border-color:rgba(191,69,33,.3)}
+.eyebrow[style*="accent)"]{color:var(--accent-ink)!important}
+.recipe{padding:12px 14px 12px 12px}
+.recipe .ph{width:76px;height:76px;border-radius:18px}
+.recipe::after{content:"";flex:none;width:18px;height:18px;opacity:.4;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232e312e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .25s var(--ease),opacity .25s}
+.quick>button{gap:var(--s4);padding:var(--s4)}
+.quick .qi{width:44px;height:44px;border-radius:14px}
+.voice-card{padding:20px 20px 20px 24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 18px 40px rgba(30,32,30,.32)}
+.btn.p{box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 12px 26px rgba(191,69,33,.36);font-weight:700}
+.btn.s{font-weight:700}
+.now h2{letter-spacing:-.02em}
+.ing li{padding:14px 0}
+.ing li.miss{font-weight:700}
+
+/* Motion: entrance only when the screen changes (not on every re-render) */
+.screen.on{animation:none}
+.screen.enter{animation:fade .3s ease-out backwards}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@keyframes sheetUp{from{transform:translateY(48px);opacity:0}}
+@keyframes drift{to{transform:translate3d(3%,2%,0) scale(1.06)}}
+@keyframes breathe{50%{transform:scale(1.05)}}
+@keyframes ripple{0%{transform:scale(.9);opacity:.55}100%{transform:scale(1.9);opacity:0}}
+@keyframes bell{0%,60%,100%{transform:rotate(0)}10%,30%,50%{transform:rotate(-14deg)}20%,40%{transform:rotate(14deg)}}
+@keyframes scanline{0%{top:6%;opacity:0}15%,85%{opacity:.9}100%{top:92%;opacity:0}}
+.screen.enter .body>*{animation:rise .6s var(--ease) backwards}
+.screen.enter .body>*:nth-child(2){animation-delay:.05s}.screen.enter .body>*:nth-child(3){animation-delay:.1s}
+.screen.enter .body>*:nth-child(4){animation-delay:.15s}.screen.enter .body>*:nth-child(5){animation-delay:.2s}
+.screen.enter .body>*:nth-child(6){animation-delay:.25s}.screen.enter .body>*:nth-child(7){animation-delay:.3s}
+.screen.enter .body>*:nth-child(n+8){animation-delay:.35s}
+.screen.enter .bottom,.screen.enter .tabbar{animation:rise .6s var(--ease) .22s backwards}
+.screen.enter .tab.on svg{animation:pop .5s var(--spring) .3s backwards}
+.screen.enter .ok{animation:pop .7s var(--spring) .15s backwards}
+.ok{position:relative}
+.ok::after{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid var(--success);animation:ripple 1.8s var(--ease) .5s 2 backwards;pointer-events:none}
+.screen.enter .stars button.on svg{animation:pop .4s var(--spring) backwards}
+#phone::before{animation:drift 28s ease-in-out infinite alternate;will-change:transform}
+.voice-card .mic-orb{animation:breathe 3.2s ease-in-out infinite}
+.alert .bell{animation:bell 2.4s ease-in-out infinite;transform-origin:50% 10%}
+.cam::after{content:"";position:absolute;left:12%;right:12%;top:6%;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);animation:scanline 3.2s ease-in-out infinite;pointer-events:none}
+.det{animation:fade .3s ease-out backwards}
+#cap.on{animation:rise .35s var(--ease)}
+#sheet.on{animation:fade .25s ease-out}
+#sheet.on .sheet-card{animation:sheetUp .45s var(--ease)}
+.track>div,.task .tr>div{transition:width .8s var(--ease)}
+.sw::after{transition:transform .35s var(--spring)}
+.press{transition:transform .22s var(--spring),opacity .15s,background .2s,box-shadow .25s}
+.press:active{transform:scale(.96);opacity:.92;transition-duration:.08s}
+.shutter:active{transform:scale(.92)}
+@media(hover:hover){
+  .card.press:hover{transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),var(--shadow-2)}
+  .card.press:hover.recipe::after{transform:translateX(3px);opacity:.7}
+  .btn.p:hover{filter:brightness(1.06)}.chip.press:hover{transform:translateY(-1px)}
+  .card.press:active,.btn.press:active{transform:scale(.97)}
+}
+.tab{transition:background .25s,color .25s,box-shadow .25s}
+.status-pill,.det span{animation:fade .3s ease-out backwards}
+
+/* ===== v5: reference match — lavender + pastel blocks, flat cards, dark floating nav ===== */
+:root{
+  --bg:#f3f3f8;--ink:#15151a;--ink-soft:#656575;--accent:#6d4ae8;--accent-ink:#4a2fc0;--accent-soft:#e3dafc;
+  --line:#e4e4ee;--surface:#fff;--dark:#17171c;--success:#3a9a5b;
+  --lav:#cdbdfa;--mint:#c6f0b0;--sun:#fdf0a2;--peach:#fbd9bb;
+  --display:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;--body:var(--display);
+  --r-card:28px;--r-pill:999px;
+  --shadow-1:0 1px 2px rgba(21,21,26,.04),0 8px 24px rgba(21,21,26,.06);
+  --shadow-2:0 2px 4px rgba(21,21,26,.05),0 16px 34px rgba(21,21,26,.12);
+}
+body{background:#e5e5ee}
+#phone::before{background:radial-gradient(60% 26% at 8% 0%,rgba(205,189,250,.6),transparent 70%),radial-gradient(50% 22% at 100% 100%,rgba(253,240,162,.5),transparent 70%)}
+h1,h2,h3{font-weight:800;letter-spacing:-.03em}
+.body{padding-top:max(20px,calc(env(safe-area-inset-top) + 12px))}
+
+/* flat white cards, no glass */
+.card,.icon-btn,.chip,.btn.s{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;border:0;box-shadow:var(--shadow-1)}
+.card{border-radius:var(--r-card)}
+.btn.s{color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.p{background:var(--ink);color:#fff;box-shadow:0 12px 26px rgba(21,21,26,.28);font-weight:700}
+.btn.p:hover{filter:none;background:#26262e}
+.chip{border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--line);font-weight:700}
+.chip.on,.chip.on.press{background:var(--ink);color:#fff;box-shadow:none}
+.tag,.tag.warn{border:0}
+.tag{background:#fff;color:var(--ink);box-shadow:var(--shadow-1);border-radius:999px;padding:5px 12px}
+.tag.warn{background:#8a2a14;color:#fff}
+.prov .tag:not(.soft){background:var(--accent);color:#fff}
+.dark .tag{background:rgba(255,255,255,.18);color:#fff;box-shadow:none}
+.eyebrow[style*="accent)"]{color:var(--ink-soft)!important}
+
+/* home */
+.greet h1{font-size:34px;line-height:1.05;letter-spacing:-.035em}
+.avatar,.qi,.task .st,.cue .ph{background:var(--lav);color:var(--accent-ink);box-shadow:none}
+.voice-card{background:var(--lav);color:var(--ink);border:0;border-radius:32px;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 18px 40px rgba(109,74,232,.22);padding:24px}
+.voice-card .eyebrow{color:var(--accent-ink)}.voice-card small{color:#4a4566}
+.voice-card h3{font-size:26px;line-height:1.1}
+.mic-ring{border-color:rgba(255,255,255,.75)}.mic-orb{background:var(--ink)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(21,21,26,.28)}50%{box-shadow:0 0 0 14px rgba(21,21,26,0)}}
+.quick>button{position:relative;overflow:hidden;border-radius:28px;min-height:132px;justify-content:space-between}
+.quick>button>*{position:relative}
+.quick>button::before{content:"";position:absolute;right:-26px;bottom:-26px;width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.4)}
+.quick>button:nth-child(1){background:var(--mint)}.quick>button:nth-child(2){background:var(--sun)}
+.quick .qi{background:#fff;color:var(--ink);border-radius:50%}
+.quick span{color:#3d3d48}
+.pill-timer,.timer-card{background:var(--sun);border:0;box-shadow:var(--shadow-1);-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:999px}
+.timer-card{border-radius:var(--r-card)}
+.pill-timer svg,.timer-card svg{color:var(--ink)}
+.resp,.hint:not(.live){background:var(--accent-soft);border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.alert,.hint.live{background:var(--accent);border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 12px 28px rgba(109,74,232,.34)}
+.alert .bell{color:var(--accent)}
+
+/* recipe cards: pastel rotation */
+.recipe{border-radius:28px}
+button.recipe:nth-of-type(3n+1){background:#e4dafc}
+button.recipe:nth-of-type(3n+2){background:var(--peach)}
+button.recipe:nth-of-type(3n){background:var(--mint)}
+.recipe .ph{background:rgba(255,255,255,.7);color:var(--accent-ink);box-shadow:none;border-radius:22px}
+.recipe small{color:#3d3d48}
+
+/* hands-free bar: white pill so only the nav is dark */
+.voice-card+.quick,.bar{}
+.bar{background:#fff;color:var(--ink);border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:var(--shadow-1)}
+.bar .orb{background:var(--accent);color:#fff}
+.wave span{background:var(--accent)}
+.now{background:var(--dark);border-radius:32px;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 18px 40px rgba(21,21,26,.3)}
+.now .eyebrow,.now p{color:#cfc4f7}
+#cap{background:var(--dark);-webkit-backdrop-filter:none;backdrop-filter:none}
+#cap small{color:#cfc4f7}
+
+/* search, fields, segments: flat, pill-shaped */
+.srch{background:#fff;border:0;border-radius:999px;box-shadow:var(--shadow-1);height:56px;padding:0 20px}
+.field{background:#fff;border:1.5px solid var(--line);box-shadow:none;border-radius:18px}
+.seg{background:#e9e9f1;box-shadow:none;border-radius:999px}
+.seg button{border-radius:999px;font-weight:700}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-1)}
+.seg.dk{background:rgba(255,255,255,.1)}.seg.dk button{color:#d8d2f0}.seg.dk button.on{background:#fff;color:var(--ink);box-shadow:none}
+.sw{background:#d9d9e5;box-shadow:none}.sw.on{background:var(--accent)}
+.sw::after{background:#fff;box-shadow:0 2px 6px rgba(21,21,26,.25)}
+.prov.sel{box-shadow:inset 0 0 0 2px var(--accent),0 10px 26px rgba(109,74,232,.16)}
+.state{background:var(--accent-soft)}
+.phero{background:#fff}
+.avatar.big{box-shadow:none}
+
+/* recipe detail */
+.hero{background:var(--lav);border:0;border-radius:32px;height:170px;box-shadow:none}
+.rtitle{font-size:32px}
+.addphoto{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;border:0}
+.ing li.miss,.ing li.miss svg,.ing li.miss em{color:#b23a12}
+.ing li svg{color:var(--success)}
+
+/* completion */
+.stats>div:nth-child(1){background:var(--mint)}.stats>div:nth-child(2){background:var(--sun)}.stats>div:nth-child(3){background:var(--lav)}
+.stats small{color:#3d3d48}
+.stars button.on{color:#f2b01e}
+.track{background:#e4e4ee;box-shadow:none}.track>div,.task .tr>div{background:var(--accent)}
+.task .tr{background:#e4e4ee}
+
+/* sheet */
+.sheet-card{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;border:0;border-radius:32px 32px 0 0}
+.grab{background:#d8d8e2}
+.bottom{background:linear-gradient(to top,rgba(243,243,248,.9),transparent)}
+
+/* floating dark nav, white active pill */
+.tabbar{background:var(--dark);border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 16px 36px rgba(21,21,26,.34);border-radius:999px;padding:8px;margin:4px 20px max(16px,env(safe-area-inset-bottom))}
+.tab{color:#b4b4c4;border-radius:999px;min-height:56px}
+.tab.on{background:#fff;color:var(--ink);box-shadow:none}
+.tab .badge{background:var(--accent);border-color:var(--dark)}.tab.on .badge{background:var(--accent);color:#fff;border-color:#fff}
+.tab:focus-visible{outline-color:#fff}
+.screen.dark .icon-btn{background:rgba(255,255,255,.16)}
+</style>
+</head>
+<body>
+<div id="phone">
+  <main id="app"></main>
+  <div id="cap" role="status" aria-live="polite"></div>
+  <div id="sheet" role="dialog" aria-modal="true" aria-label="Dialog"></div>
+  <input type="file" id="photoin" accept="image/*" hidden><input type="file" id="scanin" accept="image/*" hidden>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+"use strict";
+/* ---------- tiny helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const P={
+ mic:'<path d="M12 14.6a3.6 3.6 0 0 0 3.6-3.6V6.1a3.6 3.6 0 0 0-7.2 0V11a3.6 3.6 0 0 0 3.6 3.6z"/><path d="M5.2 10.6a.9.9 0 0 0-1.8 0 8.6 8.6 0 0 0 7.7 8.55V21H8.9a.9.9 0 0 0 0 1.8h6.2a.9.9 0 0 0 0-1.8h-2.2v-1.85a8.6 8.6 0 0 0 7.7-8.55.9.9 0 0 0-1.8 0 6.8 6.8 0 0 1-13.6 0z"/>',
+ chef:'<path d="M7 3v6.4a2.5 2.5 0 0 0 5 0V3M9.5 3v18M17.5 21V3c-2.5 1.7-3.6 4.5-3.6 7.3V14h3.6"/>',
+ timer:'<circle cx="12" cy="13.2" r="7.8"/><path d="M12 9v4.4l2.7 1.7M9.3 2.6h5.4M12 2.6v2.8"/>',
+ chev:'<path d="M9.5 5.5l6.5 6.5-6.5 6.5"/>',back:'<path d="M14.5 5.5L8 12l6.5 6.5"/>',
+ camera:'<path fill-rule="evenodd" d="M9.3 4.4 8.5 6H5.6A2.6 2.6 0 0 0 3 8.6v8.8A2.6 2.6 0 0 0 5.6 20h12.8a2.6 2.6 0 0 0 2.6-2.6V8.6A2.6 2.6 0 0 0 18.4 6h-2.9l-.8-1.6a1 1 0 0 0-.9-.55H10.2a1 1 0 0 0-.9.55zM12 17.6a4.1 4.1 0 1 1 0-8.2 4.1 4.1 0 0 1 0 8.2z"/>',
+ book:'<path d="M12 6.4C10.5 5.1 8.4 4.6 5.4 4.6A1.4 1.4 0 0 0 4 6v11.2c0 .8.6 1.4 1.4 1.4 2.9 0 4.8.5 6.1 1.6.3.2.6.2.9 0 1.3-1.1 3.2-1.6 6.1-1.6.8 0 1.4-.6 1.4-1.4V6a1.4 1.4 0 0 0-1.4-1.4c-3 0-5.1.5-6.6 1.8z"/>',
+ x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+ hand:'<path d="M8.9 4.4a1.3 1.3 0 0 1 2.6 0v5.5h.8V3.8a1.3 1.3 0 0 1 2.6 0v6.1h.8V5.5a1.3 1.3 0 0 1 2.6 0v8.4c0 4.1-2.8 7.1-6.8 7.1-2.8 0-4.5-1.3-5.8-3.6l-2-3.5a1.3 1.3 0 0 1 2.3-1.3l1 1.7z"/>',
+ check:'<path d="M5.2 12.8l4.4 4.4 9.2-10"/>',circle:'<circle cx="12" cy="12" r="8"/>',
+ bell:'<path d="M12 3.2a6 6 0 0 0-6 6v3.4c0 .8-.3 1.5-.8 2.1l-.9 1.1a1 1 0 0 0 .8 1.7h14.8a1 1 0 0 0 .8-1.7l-.9-1.1a3.3 3.3 0 0 1-.8-2.1V9.2a6 6 0 0 0-6-6zM9.8 19.6a2.3 2.3 0 0 0 4.4 0z"/>',
+ sparkle:'<path d="M10 4.2l1.7 4.5 4.5 1.7-4.5 1.7L10 16.6l-1.7-4.5L3.8 10.4l4.5-1.7zM18 13.4l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z"/>',
+ vol:'<path d="M4 9.5v5h3.8l5 3.8V5.7l-5 3.8zM16.2 9a4.2 4.2 0 0 1 0 6"/>',volx:'<path d="M4 9.5v5h3.8l5 3.8V5.7l-5 3.8zM16.5 9.5l4 5M20.5 9.5l-4 5"/>',
+ star:'<path d="M12 3.2l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.5l6-.8z"/>',
+ flip:'<path d="M4 7h13l-3-3M20 17H7l3 3"/>',
+ home:'<path d="M4 11.2 12 4.4l8 6.8V19a1.4 1.4 0 0 1-1.4 1.4H15v-5.4H9v5.4H5.4A1.4 1.4 0 0 1 4 19z"/>',
+ gear:'<path d="M10.4 2.8h3.2l.5 2.4c.5.2 1 .5 1.4.8l2.3-.8 1.6 2.8-1.8 1.6c.1.5.1 1 0 1.5l1.8 1.6-1.6 2.8-2.3-.8c-.4.3-.9.6-1.4.8l-.5 2.4h-3.2l-.5-2.4c-.5-.2-1-.5-1.4-.8l-2.3.8-1.6-2.8 1.8-1.6c-.1-.5-.1-1 0-1.5L4.6 8.8l1.6-2.8 2.3.8c.4-.3.9-.6 1.4-.8zM12 9.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z"/>'
+};
+Object.assign(P,{user:'<circle cx="12" cy="8.2" r="3.7"/><path d="M4.8 20c.6-3.8 3.6-6 7.2-6s6.6 2.2 7.2 6"/>',heart:'<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6 20 20"/>',image:'<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5L20 17"/>'});
+const FILLED=new Set(['mic','camera','book','hand','bell','sparkle','star','home','gear']);
+const ic=(n,c='')=>`<svg class="i ${FILLED.has(n)?'f':''} ${c}" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
+const fmt=s=>{s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DEF={name:'',diet:'any',spice:'medium',skill:'Easy',serv:2,cuis:[],allergy:'',speak:true,rate:1,lang:'en-IN',haptics:true,autoVoice:true,awake:true};
+let PREF=Object.assign({},DEF),HIST=[],FAVS=[];
+try{Object.assign(PREF,JSON.parse(localStorage.getItem('ska-prefs')||'{}'));HIST=JSON.parse(localStorage.getItem('ska-hist')||'[]');FAVS=JSON.parse(localStorage.getItem('ska-favs')||'[]')}catch(e){}
+const saveLS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const savePrefs=()=>saveLS('ska-prefs',PREF);
+const buzz=n=>{try{PREF.haptics&&navigator.vibrate&&navigator.vibrate(n)}catch(e){}};
+
+/* ---------- recipe photos ----------
+   Paste real image links here, or tap "Add photo" on a recipe to pick one from your device. */
+const PHOTO_URLS={pasta:'',bhurji:'',soup:''};
+let PH={};try{PH=JSON.parse(localStorage.getItem('ska-photos')||'{}')}catch(e){}
+const photoOf=id=>PH[id]||PHOTO_URLS[id]||'';
+const photoStyle=id=>{const u=photoOf(id);return u?` style="background-image:url(&quot;${String(u).replace(/[&<>\"]/g,'')}&quot;)"`:''};
+function savePhoto(id,file){
+  const img=new Image(),url=URL.createObjectURL(file);
+  img.onload=()=>{const m=900,k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+    PH[id]=c.toDataURL('image/jpeg',.82);try{localStorage.setItem('ska-photos',JSON.stringify(PH))}catch(e){caption('Photo added for this session. Storage is full, so it won’t be remembered.','CHEF AI')}
+    render();say('Photo added.')};
+  img.onerror=()=>{URL.revokeObjectURL(url);caption('That file couldn’t be read as a photo.','CHEF AI')};
+  img.src=url;
+}
+
+/* ---------- data ---------- */
+const RECIPES=[
+ {id:'pasta',title:'Paneer Tomato Pasta',time:25,serv:2,level:'Easy',tag:'FAST PICK',kw:['pasta','paneer','tomato'],
+  ing:[['Penne pasta','200 g','pasta'],['Paneer','150 g','paneer'],['Tomatoes','3 pc','tomato'],['Onion','1 pc','onion'],['Basil','1 handful','basil'],['Garlic','4 cloves','garlic'],['Chili flakes','2 tsp','chili']],
+  steps:[
+   {t:'Chop the onions and tomatoes.',d:'Dice the onion small and roughly chop three tomatoes.',cue:'Pieces about the size of a coin.',timer:null},
+   {t:'Bring a pot of salted water to a boil.',d:'Use about 2 litres and a good pinch of salt.',cue:'Big rolling bubbles across the surface.',timer:null},
+   {t:'Sauté the onions until golden brown.',d:'About 4 minutes on medium heat. Stir every 30 seconds.',cue:'Light golden edges, soft and see-through centre',timer:['Sauté onions',240,'MEDIUM HEAT']},
+   {t:'Add tomatoes and basil, then simmer.',d:'Lower the heat for 10 minutes. I’ll alert you when it’s ready.',cue:'Tomatoes break down and the sauce turns glossy.',timer:['Simmer sauce',600,'SIMMER · AUTO-STARTED']},
+   {t:'Add the pasta to the boiling water.',d:'Cook for 9 minutes, stirring once at the start.',cue:'Pasta is firm to the bite with a pale centre.',timer:['Boil pasta',540,'ROLLING BOIL']},
+   {t:'Pan-fry the paneer cubes.',d:'Two to three minutes until the edges are lightly golden.',cue:'Golden edges, still soft inside.',timer:['Fry paneer',150,'MEDIUM-HIGH HEAT']},
+   {t:'Toss pasta, sauce and paneer together.',d:'Add a splash of pasta water if the sauce feels thick.',cue:'Sauce coats every piece evenly.',timer:null},
+   {t:'Plate it and finish with fresh basil.',d:'Serve hot. Tear the basil over the top.',cue:'Steam rising and bright green basil on top.',timer:null}]},
+ {id:'bhurji',title:'Onion Paneer Bhurji',time:15,serv:2,level:'Easy',tag:'92% MATCH',kw:['bhurji','paneer','onion'],
+  ing:[['Paneer','200 g','paneer'],['Onion','2 pc','onion'],['Tomatoes','2 pc','tomato'],['Green chili','1 pc','chili'],['Garlic','3 cloves','garlic']],
+  steps:[{t:'Crumble the paneer.',d:'Use your hands to make coarse crumbs.',cue:'Pieces smaller than a pea.',timer:null},
+   {t:'Sauté the onions until soft.',d:'Three minutes on medium heat.',cue:'Translucent, no browning yet.',timer:['Sauté onions',180,'MEDIUM HEAT']},
+   {t:'Add tomatoes and spices, then cook down.',d:'Cook five minutes until the oil separates.',cue:'Oil shimmering at the edges.',timer:['Cook masala',300,'MEDIUM HEAT']},
+   {t:'Fold in the paneer and finish.',d:'Cook two minutes, then serve warm.',cue:'Everything coated, no wet patches.',timer:['Finish bhurji',120,'LOW HEAT']}]},
+ {id:'soup',title:'Tomato Basil Soup',time:30,serv:2,level:'Easy',tag:'86% MATCH',kw:['soup','tomato','basil'],
+  ing:[['Tomatoes','6 pc','tomato'],['Onion','1 pc','onion'],['Basil','1 handful','basil'],['Garlic','3 cloves','garlic']],
+  steps:[{t:'Chop everything roughly.',d:'No need to be neat, it gets blended.',cue:'Chunky pieces of equal size.',timer:null},
+   {t:'Sauté onion and garlic.',d:'Three minutes on medium heat.',cue:'Soft and fragrant.',timer:['Sauté base',180,'MEDIUM HEAT']},
+   {t:'Add tomatoes and simmer.',d:'Cover and cook for 15 minutes.',cue:'Tomatoes collapsed into a thick sauce.',timer:['Simmer soup',900,'LOW HEAT']},
+   {t:'Blend and add basil.',d:'Blend until smooth and season to taste.',cue:'Smooth, deep red soup.',timer:null}]}
+];
+const PANTRY_ALL={tomato:'Tomato',onion:'Onion',basil:'Basil',paneer:'Paneer',pasta:'Pasta',garlic:'Garlic',chili:'Chili',egg:'Egg',rice:'Rice',chicken:'Chicken',yogurt:'Yogurt',ginger:'Ginger',lentil:'Lentils',cheese:'Cheese',carrot:'Carrot',soy:'Soy sauce',lime:'Lime',avocado:'Avocado',tortilla:'Tortilla',cucumber:'Cucumber',pepper:'Pepper',olive:'Olives',bacon:'Bacon',potato:'Potato',milk:'Milk',butter:'Butter',spinach:'Spinach',mushroom:'Mushroom',bread:'Bread',chickpea:'Chickpeas'};
+[['pasta','Fusion','veg'],['bhurji','Indian','veg'],['soup','Italian','vegan']].forEach(([id,c,d])=>Object.assign(RECIPES.find(r=>r.id===id),{cuisine:c,diet:d}));
+const mk=(id,title,cuisine,diet,time,level,ing,steps)=>RECIPES.push({id,title,cuisine,diet,time,serv:2,level,tag:cuisine.toUpperCase(),kw:[...title.toLowerCase().split(' ').filter(w=>w.length>3),cuisine.toLowerCase()],ing:ing.split(';').map(x=>x.split(':')),steps:steps.map(([t,d,cue,sec,nm,sub])=>({t,d,cue,timer:sec?[nm,sec,sub||'MEDIUM HEAT']:null}))});
+mk('biryani','Chicken Biryani','Indian','nonveg',50,'Medium','Basmati rice:250 g:rice;Chicken:400 g:chicken;Onion:2 pc:onion;Yogurt:½ cup:yogurt;Garlic:4 cloves:garlic;Ginger:1 inch:ginger',[['Marinate the chicken.','Mix chicken with yogurt, ginger, garlic and spices.','Every piece is evenly coated.'],['Fry the onions until deep brown.','Slice thin and fry on medium heat.','Dark golden and crisp at the edges.',480,'Brown onions'],['Cook the chicken.','Add the marinated chicken, cover and cook.','Oil separates and chicken is tender.',900,'Cook chicken','LOW HEAT'],['Layer rice and steam.','Top with par-boiled rice, seal the lid and steam.','Steam escapes evenly, rice is fluffy.',900,'Steam biryani','LOW HEAT']]);
+mk('dal','Dal Tadka','Indian','vegan',30,'Easy','Yellow lentils:1 cup:lentil;Tomato:2 pc:tomato;Onion:1 pc:onion;Garlic:4 cloves:garlic;Chili flakes:1 tsp:chili',[['Boil the lentils.','Simmer with turmeric and salt until soft.','Lentils mash easily with a spoon.',1200,'Boil lentils','LOW HEAT'],['Fry onion and garlic for the tadka.','Fry in hot oil with chili until golden.','Fragrant, edges turning golden.',240,'Make tadka'],['Pour the tadka over the dal.','Stir in tomato and simmer briefly.','Glossy dal with oil shimmering on top.']]);
+mk('shakshuka','Shakshuka','Middle Eastern','veg',25,'Easy','Eggs:4 pc:egg;Tomatoes:4 pc:tomato;Onion:1 pc:onion;Garlic:3 cloves:garlic;Chili flakes:1 tsp:chili',[['Soften the onion and garlic.','Cook in olive oil on medium heat.','Soft and see-through.',180,'Sauté base'],['Simmer the tomatoes with spices.','Add tomatoes, chili and cumin.','Thick sauce that holds a spoon trail.',600,'Simmer sauce','LOW HEAT'],['Crack in the eggs and cover.','Make small wells and cook covered.','Whites set, yolks still soft.',300,'Poach eggs','LOW HEAT']]);
+mk('carbonara','Spaghetti Carbonara','Italian','nonveg',20,'Medium','Spaghetti:200 g:pasta;Bacon:100 g:bacon;Eggs:2 pc:egg;Parmesan:50 g:cheese;Black pepper:1 tsp:pepper',[['Boil the spaghetti.','Use well-salted water.','Firm to the bite.',540,'Boil spaghetti','ROLLING BOIL'],['Crisp the bacon.','Cook in a dry pan.','Golden and crisp.',240,'Crisp bacon'],['Mix eggs, cheese and pepper.','Whisk in a bowl.','Thick, creamy paste.'],['Toss off the heat.','Combine pasta, bacon and egg mix with a splash of pasta water.','Silky sauce, no scrambled egg.']]);
+mk('friedrice','Chicken Fried Rice','Chinese','nonveg',20,'Easy','Cooked rice:3 cups:rice;Chicken:200 g:chicken;Eggs:2 pc:egg;Carrot:1 pc:carrot;Soy sauce:2 tbsp:soy',[['Cook the chicken.','Stir-fry diced chicken on high heat.','No pink left inside.',300,'Cook chicken','HIGH HEAT'],['Scramble the eggs.','Push chicken aside and scramble.','Soft curds.',90,'Scramble eggs'],['Add rice, carrot and soy.','Toss everything on high heat.','Grains separate and slightly toasted.',240,'Fry rice','HIGH HEAT']]);
+mk('tacos','Chicken Tacos','Mexican','nonveg',25,'Easy','Tortillas:6 pc:tortilla;Chicken:300 g:chicken;Tomatoes:2 pc:tomato;Onion:1 pc:onion;Lime:1 pc:lime;Avocado:1 pc:avocado',[['Season and cook the chicken.','Cook strips with chili and cumin.','Browned and juicy.',420,'Cook chicken','MEDIUM-HIGH HEAT'],['Make the salsa.','Dice tomato and onion, squeeze lime.','Bright and chunky.'],['Warm the tortillas.','Heat each on a dry pan.','Soft with light brown spots.',60,'Warm tortillas'],['Assemble the tacos.','Chicken, salsa and sliced avocado.','Fully loaded and folded.']]);
+mk('greek','Greek Salad','Greek','veg',10,'Easy','Cucumber:1 pc:cucumber;Tomatoes:3 pc:tomato;Onion:½ pc:onion;Feta cheese:100 g:cheese;Olives:½ cup:olive',[['Chop the vegetables.','Large chunks of cucumber, tomato and onion.','Chunky, bite-sized pieces.'],['Add feta and olives.','Place feta on top in a slab.','Colourful and generous.'],['Dress and serve.','Olive oil, lemon, oregano and salt.','Glistening, lightly coated.']]);
+mk('teriyaki','Teriyaki Chicken Bowl','Japanese','nonveg',30,'Easy','Rice:2 cups:rice;Chicken:300 g:chicken;Soy sauce:3 tbsp:soy;Ginger:1 tsp:ginger;Carrot:1 pc:carrot',[['Cook the rice.','Rinse and simmer covered.','Tender, steam holes on top.',900,'Cook rice','LOW HEAT'],['Sear the chicken.','Cook skin-side down.','Deep golden brown.',360,'Sear chicken','MEDIUM-HIGH HEAT'],['Glaze with teriyaki.','Add soy, ginger and honey.','Sticky glaze coats each piece.',120,'Glaze','LOW HEAT'],['Build the bowl.','Rice, chicken, carrot ribbons.','Glossy and steaming.']]);
+try{JSON.parse(localStorage.getItem('ska-ai-recipes')||'[]').forEach(r=>RECIPES.push(r))}catch(e){}
+const DIETOK={veg:['veg','vegan'],egg:['veg','vegan','egg'],vegan:['vegan']};
+const okDiet=r=>!DIETOK[PREF.diet]||DIETOK[PREF.diet].includes(r.diet);
+const allergyHit=r=>{const w=PREF.allergy.toLowerCase().split(/[,;]+/).map(x=>x.trim()).filter(x=>x.length>2);return w.find(a=>r.ing.some(i=>i[0].toLowerCase().includes(a)))||''};
+const suggest=()=>{const L=RECIPES.filter(r=>!r.ai&&okDiet(r)&&!allergyHit(r));return L.find(r=>PREF.cuis.includes(r.cuisine))||L[0]||RECIPES[0]};
+
+/* ---------- state ---------- */
+const S={screen:'home',rid:'pasta',step:0,found:new Set(),
+ timers:[],log:[],cmds:0,startedAt:null,adapt:null,applied:false,rating:0,
+ handsfree:false,gestures:false,muted:!PREF.speak,stream:null,facing:'user',alert:null};
+const R=()=>RECIPES.find(r=>r.id===S.rid);
+const haveKey=k=>S.found.has(k)||['garlic','chili'].indexOf(k)<0&&false;
+
+/* ---------- speech out ---------- */
+const TTS='speechSynthesis' in window;
+let voice=null;
+function pickVoice(){if(!TTS)return;const v=speechSynthesis.getVoices();voice=v.find(x=>x.lang.replace('_','-').toLowerCase()===PREF.lang.toLowerCase())||v.find(x=>/en-IN/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang)&&/female|samantha|google/i.test(x.name))||v.find(x=>/^en/i.test(x.lang))||null}
+if(TTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+let speaking=false;
+function say(text,opts={}){
+  caption(text,'CHEF AI');$('#live').textContent=text;
+  if(!TTS||S.muted){return Promise.resolve()}
+  return new Promise(res=>{
+    try{speechSynthesis.cancel()}catch(e){}
+    const u=new SpeechSynthesisUtterance(text);if(voice)u.voice=voice;u.rate=opts.rate||PREF.rate;u.pitch=1.02;
+    speaking=true;pauseRec();
+    const done=()=>{speaking=false;resumeRec();res()};
+    u.onend=done;u.onerror=done;speechSynthesis.speak(u);
+    setTimeout(()=>{if(speaking&&!speechSynthesis.speaking)done()},800+text.length*120);
+  });
+}
+let capT;function caption(t,who){const c=$('#cap');c.innerHTML=`<small>${who}</small>${esc(t)}`;c.classList.add('on');clearTimeout(capT);capT=setTimeout(()=>c.classList.remove('on'),Math.min(9000,2500+t.length*55))}
+function youSaid(t){caption(t,'YOU SAID')}
+
+/* ---------- speech in ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,recOn=false,recWanted=false,recMode='cmd',recCb=null,wake=false;
+function initRec(){
+  if(!SR||rec)return;
+  rec=new SR();rec.lang=PREF.lang;rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=3;
+  rec.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i],txt=r[0].transcript.trim();
+      if(!r.isFinal){const el=$('#heard');if(el)el.textContent='“'+txt+'”';continue}
+      handleHeard(txt,Array.from(r,a=>a.transcript.trim()));
+    }
+  };
+  rec.onend=()=>{recOn=false;if(recWanted&&!speaking)setTimeout(()=>{try{rec.start();recOn=true}catch(e){}},250)};
+  rec.onerror=e=>{recOn=false;if(e.error==='not-allowed'||e.error==='service-not-allowed'){recWanted=false;S.handsfree=false;caption('Microphone is blocked. Allow it in the browser address bar, then tap the mic again.','CHEF AI');renderBars()}};
+}
+function startRec(){if(!SR){caption('Voice input needs Chrome, Edge or Safari. You can still tap every button.','CHEF AI');return false}
+  initRec();recWanted=true;if(!recOn&&!speaking){try{rec.start();recOn=true}catch(e){}}renderBars();return true}
+function stopRec(){recWanted=false;if(rec&&recOn){try{rec.stop()}catch(e){}}recOn=false;renderBars()}
+function pauseRec(){if(rec&&recOn){try{rec.abort()}catch(e){}recOn=false}}
+function resumeRec(){if(recWanted&&rec&&!recOn){setTimeout(()=>{try{rec.start();recOn=true}catch(e){}},300)}}
+
+/* number words (English + Hinglish) for “timer for five minutes” */
+const NUMW={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,twelve:12,fifteen:15,twenty:20,thirty:30,forty:40,sixty:60,ek:1,do:2,teen:3,char:4,paanch:5,panch:5,chhe:6,saat:7,aath:8,nau:9,das:10};
+const numOf=w=>/^\d+$/.test(w)?parseInt(w):(NUMW[w]||0);
+/* maps many ways of saying a command onto one canonical phrase the rest of the app understands */
+function canonical(t){
+  let m=t.match(/\b(?:set |start |lagao |chalu karo )?(?:a |the )?timer (?:for |of )?(\d+|[a-z]+) ?(minutes?|mins?|seconds?|secs?)\b/)||t.match(/\b(\d+|[a-z]+) ?(minutes?|mins?|seconds?|secs?) (?:ka )?timer\b/);
+  if(m){const n=numOf(m[1]);if(n)return `set timer for ${n} ${/^s/.test(m[2])?'second':'minute'}`}
+  const R=[
+   [/\b(go |back |take me )?(to )?(the )?(home|main menu|home screen)\b/,'go home'],
+   [/\b(i ?'?m done|im done|we'?re done|all done|finished cooking|finish cooking|finish|end cooking|khatam|ho gaya)\b/,'finish cooking'],
+   [/\b(next|next step|continue|go on|move on|go ahead|what'?s next|whats next|agla|aage|done with this|ready for the next)\b/,'next'],
+   [/\b(previous|last step|go back|back|pichla|peeche|wapas)\b/,'previous'],
+   [/\b(repeat|say that again|say again|again|one more time|what was that|what do i do|dobara|phir se|kya karna hai)\b/,'repeat'],
+   [/\b(pause|wait|hold on|hold up|ruko|ek minute)\b/,'pause'],
+   [/\b(how much time|time left|how long|kitna time|kitna samay|kitna baki)\b/,'how much time is left'],
+   [/\b(start|set|lagao|chalu karo)( the| a)? timer\b/,'start timer'],
+   [/\b(capture|take (the |a )?(photo|picture)|snap|that'?s all)\b/,'capture'],
+   [/\b(what can i say|help|commands|madad)\b/,'help']
+  ];
+  for(const [re,c] of R)if(re.test(t))return c;
+  return null;
+}
+function handleHeard(raw,alts){
+  alts=alts&&alts.length?alts:[raw];
+  const clean=x=>x.toLowerCase().replace(/[.,!?]/g,'').trim();
+  const WAKE=/\b(hey|hi|ok|okay) ?(chef|shef)\b/;
+  /* use the best of the recogniser's alternatives: first one that maps to a known command */
+  let pick=raw;for(const x of alts){if(canonical(clean(x).replace(WAKE,'').trim())){pick=x;break}}
+  let t=clean(pick);if(!t)return;
+  const hasWake=WAKE.test(t);
+  if(S.screen==='home'&&!hasWake&&!S.listenOnce&&!S.handsfree)return;
+  if(S.handsfree&&!hasWake&&!S.listenOnce&&!['cook','tasks','adapt','scan'].includes(S.screen)&&S.screen!=='results'&&S.screen!=='detail'&&S.screen!=='done')return;
+  t=t.replace(WAKE,'').trim();
+  S.listenOnce=false;
+  if(!t){say('I’m listening. What are we cooking?');return}
+  S.cmds++;youSaid(raw);$('#heard')&&($('#heard').textContent='“'+raw+'”');
+  command(canonical(t)||t);
+}
+
+/* ---------- AI layer: bring your own provider (key stays in this browser) ---------- */
+const PROVIDERS={
+ groq:{name:'Groq',tag:'FREE · FASTEST',rec:1,base:'https://api.groq.com/openai/v1',model:'meta-llama/llama-4-scout-17b-16e-instruct',kind:'oai',url:'console.groq.com/keys',why:'Free tier, very low latency (ideal for voice) and photo input.'},
+ openai:{name:'OpenAI',tag:'BEST ACCURACY',base:'https://api.openai.com/v1',model:'gpt-4o-mini',kind:'oai',url:'platform.openai.com/api-keys',why:'Most reliable recipes and vision. Pay per use, roughly a cent per scan.'},
+ anthropic:{name:'Anthropic Claude',tag:'GREAT VISION',base:'https://api.anthropic.com/v1',model:'claude-haiku-5-5',kind:'ant',url:'console.anthropic.com/settings/keys',why:'Excellent at reading photos and following cooking steps. Pay per use.'},
+ openrouter:{name:'OpenRouter',tag:'ONE KEY · MANY MODELS',base:'https://openrouter.ai/api/v1',model:'openai/gpt-4o-mini',kind:'oai',url:'openrouter.ai/keys',why:'One key for hundreds of models, some free. Change the model name any time.'},
+ custom:{name:'Custom endpoint',tag:'ADVANCED',base:'',model:'',kind:'oai',url:'',why:'Any OpenAI-style API: Together, Mistral, DeepSeek or Ollama on your computer.'}};
+let AI={p:'groq',keys:{},models:{},base:''};try{Object.assign(AI,JSON.parse(localStorage.getItem('ska-ai')||'{}'))}catch(e){}
+if(!PROVIDERS[AI.p])AI.p='groq';
+const saveAI=()=>saveLS('ska-ai',AI);
+const LLM={busy:false,get key(){return AI.keys[AI.p]||''},get model(){return AI.models[AI.p]||PROVIDERS[AI.p].model},get base(){return (AI.p==='custom'?AI.base:PROVIDERS[AI.p].base).replace(/\/$/,'')}};
+const httpErr=r=>Object.assign(new Error('http'),{status:r.status});
+async function llm({sys,text,img,max=500}){
+  if(!LLM.key)throw Object.assign(new Error('nokey'),{status:0});
+  let r,d;
+  if(PROVIDERS[AI.p].kind==='ant'){
+    const c=[];if(img)c.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:img}});c.push({type:'text',text});
+    r=await fetch(LLM.base+'/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':LLM.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:LLM.model,max_tokens:max,temperature:.2,system:sys,messages:[{role:'user',content:c}]})});
+    if(!r.ok)throw httpErr(r);d=await r.json();return (d.content||[]).map(x=>x.text||'').join('');
+  }
+  const c=[{type:'text',text}];if(img)c.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+img}});
+  r=await fetch(LLM.base+'/chat/completions',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+LLM.key},body:JSON.stringify({model:LLM.model,max_tokens:max,temperature:.2,messages:[{role:'system',content:sys},{role:'user',content:img?c:text}]})});
+  if(!r.ok)throw httpErr(r);d=await r.json();return d.choices[0].message.content||'';
+}
+const ask=async o=>{const t=await llm(o),m=String(t).match(/\{[\s\S]*\}/);return JSON.parse(m?m[0]:'{}')};
+const aiErr=e=>e.status===429?'The AI limit is reached for now. Basic commands still work.':(e.status===401||e.status===403)?'The AI provider rejected the key. Check it in Settings.':e.status===404||e.status===400?'The AI model name looks wrong. Check Settings.':'I couldn’t reach the AI. Basic commands still work.';
+const prefCtx=()=>({diet:PREF.diet,spice:PREF.spice,allergies:PREF.allergy,likedCuisines:PREF.cuis,servings:PREF.serv,skill:PREF.skill});
+async function askLLM(text){
+  if(!LLM.key){caption('Add an AI key in Settings to answer open questions.','CHEF AI');return say('Sorry, I didn’t catch that. Try next, repeat, or start timer.')}
+  if(LLM.busy)return;LLM.busy=true;caption('Thinking…','CHEF AI');
+  const r=R(),st=r.steps[S.step];
+  const sys='You are Chef AI inside a hands-free kitchen app. The user spoke a command or question. Reply with ONE JSON object only: {"action":"next|previous|repeat|start_timer|set_timer|time_left|open_recipe|recipe|adapt|swap|scan|home|finish|answer","arg":"string or empty","seconds":0,"reply":"one or two short spoken sentences"}. Use "answer" for cooking questions (substitutions, techniques, doneness) and put the answer in reply. Use "open_recipe" with arg = a recipe id from the list. Use "recipe" with arg = the dish or cuisine when the user wants a dish that is not in the list (any cuisine in the world). Use "adapt" with arg = the change requested. Use "swap" with arg = the missing ingredient. Use "set_timer" with seconds. Never invent actions. Respect the cook preferences. Keep replies under 30 words, plain speech, no markdown.';
+  const ctx={screen:S.screen,recipe:r.title,currentStep:S.screen==='cook'?{n:S.step+1,of:r.steps.length,text:st.t,detail:st.d}:null,ingredients:r.ing.map(i=>i[0]+' '+i[1]),userHas:[...S.found],recipes:RECIPES.slice(0,40).map(x=>x.id+': '+x.title),prefs:prefCtx()};
+  try{
+    const a=await ask({sys,text:JSON.stringify({context:ctx,heard:text}),max:260});LLM.busy=false;
+    switch(a.action){
+      case 'next':return nextStep();case 'previous':return prevStep();case 'repeat':return readStep();
+      case 'start_timer':return startStepTimer(true);case 'time_left':return tellTime();
+      case 'set_timer':if(a.seconds>0&&a.seconds<=21600){addTimer('Timer',Math.round(a.seconds),'VOICE TIMER');return say(a.reply||'Timer set.')}break;
+      case 'open_recipe':if(RECIPES.some(x=>x.id===a.arg)){openRecipe(a.arg);return say(a.reply||'Here you go.')}break;
+      case 'recipe':return aiGenerate(a.arg||text);
+      case 'adapt':return adaptVoice(a.arg||text);case 'swap':return swapIngredient(a.arg||text);
+      case 'scan':go('scan');return say(a.reply||'Opening the camera.');
+      case 'home':return go('home');case 'finish':return finish();
+    }
+    say(a.reply||'Sorry, I couldn’t help with that.');
+  }catch(e){LLM.busy=false;say(aiErr(e))}
+}
+/* any recipe in the world, or identify a dish from a photo */
+const RSCHEMA='{"title":"","cuisine":"","diet":"veg|vegan|egg|nonveg","time":30,"level":"Easy|Medium|Hard","serv":2,"ing":[["name","amount","key"]],"steps":[{"t":"short instruction","d":"one or two sentences","cue":"what to look for","timer":null}]} where timer is null or ["label",seconds,"HEAT LEVEL"]. 5 to 9 steps, at most 12 ingredients.';
+async function aiGenerate(q,img){
+  if(!LLM.key){caption('Add an AI key in Settings to create any recipe.','CHEF AI');return go('settings')}
+  if(LLM.busy)return;LLM.busy=true;caption(img?'Identifying your dish…':'Writing your recipe…','CHEF AI');
+  try{
+    const sys='You are a world-class chef. Write one authentic recipe. Reply with ONE JSON object only, no markdown: '+RSCHEMA+' For each ingredient "key" must be one of these ids when it fits, else a short lowercase word: '+Object.keys(PANTRY_ALL).join(', ')+'. Respect the cook: '+JSON.stringify(prefCtx())+'.';
+    const a=await ask({sys,text:img?'Identify the dish in this photo and write its recipe. '+(q||''):q,img,max:1500});
+    const r=addAIRecipe(a);LLM.busy=false;
+    if(!r)return say('I couldn’t build that recipe. Try describing the dish differently.');
+    openRecipe(r.id);say(`Here’s ${r.title}. It takes ${r.time} minutes. Say start cooking when you’re ready.`);
+  }catch(e){LLM.busy=false;say(aiErr(e))}
+}
+function addAIRecipe(a){
+  if(!a||!a.title||!Array.isArray(a.ing)||!Array.isArray(a.steps)||!a.steps.length)return null;
+  const r={id:'ai'+Date.now().toString(36),ai:true,title:String(a.title).slice(0,60),cuisine:String(a.cuisine||'World').slice(0,24),diet:['veg','vegan','egg','nonveg'].includes(a.diet)?a.diet:'nonveg',time:Math.round(a.time)||30,serv:a.serv||2,level:a.level||'Medium',tag:'AI CREATED',kw:String(a.title).toLowerCase().split(' ').filter(w=>w.length>3),
+   ing:a.ing.slice(0,14).map(x=>[String(x[0]),String(x[1]||''),String(x[2]||x[0]).toLowerCase().replace(/[^a-z]/g,'')]),
+   steps:a.steps.slice(0,14).map(t=>({t:String(t.t||''),d:String(t.d||''),cue:String(t.cue||'It looks and smells right.'),timer:Array.isArray(t.timer)&&t.timer[1]>0&&t.timer[1]<=7200?[String(t.timer[0]||'Timer'),Math.round(t.timer[1]),String(t.timer[2]||'MEDIUM HEAT')]:null}))};
+  RECIPES.unshift(r);saveLS('ska-ai-recipes',RECIPES.filter(x=>x.ai).slice(0,20));return r;
+}
+/* camera frame (live camera or an uploaded photo) as base64 jpeg */
+function frame(){
+  if(S.upImg)return S.upImg;
+  if(!video||video.readyState<2)return null;
+  const c=document.createElement('canvas'),k=Math.min(1,768/Math.max(video.videoWidth,video.videoHeight));
+  c.width=Math.round(video.videoWidth*k);c.height=Math.round(video.videoHeight*k);c.getContext('2d').drawImage(video,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',.75).split(',')[1];
+}
+async function visionScan(img){
+  const sys='You identify food ingredients in a kitchen photo. Reply with ONE JSON object: {"known":[ids],"other":[names]}. "known" may only contain ids from: '+Object.keys(PANTRY_ALL).join(', ')+'. "other" lists other clearly visible edible ingredients in plain English, max 8. If nothing edible is visible return empty arrays.';
+  return ask({sys,text:'What ingredients are visible?',img,max:250});
+}
+async function adaptSmart(t){
+  const r=R();
+  const sys='You adapt recipes by voice. Reply with ONE JSON object: {"edits":[{"i":number,"name":"new ingredient name or empty","amount":"new amount or empty","text":"short human readable change"}],"notes":["short extra tips"],"spoken":"one short sentence"}. "i" is the index of the ingredient in the list. Only edit what the request needs. Max 4 edits and 2 notes. Never change cooking times.';
+  return ask({sys,text:JSON.stringify({request:t,recipe:r.title,ingredients:r.ing.map((x,i)=>({i,name:x[0],amount:x[1]})),prefs:prefCtx()}),max:500});
+}
+/* settings actions */
+let keyState={t:'',cls:''};
+function openSettings(){go('settings')}function closeSettings(){}
+async function saveKey(){
+  const g=id=>(($(id)||{}).value||'').trim(),k=g('#keyin'),m=g('#modelin'),bu=g('#basein');
+  if(!k){AI.keys[AI.p]='';saveAI();keyState={t:'Key removed',cls:''};render();return}
+  AI.keys[AI.p]=k;if(m)AI.models[AI.p]=m;else delete AI.models[AI.p];if(AI.p==='custom')AI.base=bu;saveAI();
+  keyState={t:'Testing…',cls:''};render();
+  try{await llm({sys:'Reply with the single word ok',text:'ok',max:8});keyState={t:'Works. Smart features are on',cls:'ok'};say('Smart features are on. Ask me anything.')}
+  catch(e){keyState={t:e.status===429?'Key is valid but the limit is reached. Try later':(e.status===401||e.status===403)?'The provider rejected this key. Check it and try again':(e.status===404||e.status===400)?'Model not found. Check the model name':'Could not verify. Check your internet and these settings',cls:'bad'}}
+  render();
+}
+function removeKey(){AI.keys[AI.p]='';saveAI();keyState={t:'Key removed',cls:''};render()}
+/* ---------- command brain ---------- */
+const has=(t,...w)=>w.some(x=>t.includes(x));
+function command(t){
+  if(LLM.key&&t.split(' ').length>=3&&!/^(set timer for \d+|rate |go home|finish cooking|how much time is left|start timer|go to |mute|unmute)/.test(t)){return askLLM(t)}
+  /* rating */
+  let m=t.match(/rate (it )?(\w+) star/);if(m){const n={one:1,two:2,three:3,four:4,five:5}[m[2]]||parseInt(m[2])||5;return rate(n)}
+  if(has(t,'mute','be quiet','stop talking')){S.muted=true;try{speechSynthesis.cancel()}catch(e){};caption('Voice replies muted. Say “unmute” to hear me again.','CHEF AI');return}
+  if(has(t,'unmute','talk to me')){S.muted=false;return say('I’m back. I’ll talk you through each step.')}
+  if(has(t,'go home','home screen','main menu','go back home'))return go('home');
+  if(has(t,'settings','preferences'))return go('settings');
+  if(has(t,'my profile','profile page'))return go('profile');
+  if(has(t,'active task','timers','what’s running','whats running'))return go('tasks');
+  if(has(t,'scan','camera','what ingredients','what i have')){if(S.screen!=='scan'){go('scan');return say('Opening the camera. Hold your ingredients in the frame, then say capture.')}}
+  if(S.screen==='scan'){
+    if(has(t,'capture','take','snap','done','that’s all'))return capture();
+    if(has(t,'flip','switch camera'))return flipCam();
+  }
+  /* timers */
+  m=t.match(/(?:set|start) (?:a )?timer (?:for )?(\d+) (minute|second)/);if(m){addTimer('Timer',parseInt(m[1])*(m[2]==='minute'?60:1),'VOICE TIMER');return say(`Timer set for ${m[1]} ${m[2]}s.`)}
+  if(has(t,'start timer','set timer','start the timer','start a timer')){return startStepTimer(true)}
+  if(has(t,'time left','how much time','how long left','how long')){return tellTime()}
+  if(has(t,'stop timer','cancel timer','dismiss','got it')){S.alert=null;S.timers=S.timers.filter(x=>!x.fired);render();return say('Okay, cleared.')}
+  /* cooking nav */
+  if(S.screen==='cook'){
+    if(has(t,'next','continue','done','ready','go on'))return nextStep();
+    if(has(t,'back','previous','go back','last step'))return prevStep();
+    if(has(t,'repeat','again','say that','what was that','what do i do'))return readStep();
+    if(has(t,'swap','substitute','replace','don’t have','dont have','no garlic','missing'))return swapIngredient(t);
+    if(has(t,'what do i look','look for','how will i know','how do i know'))return say(R().steps[S.step].cue);
+    if(has(t,'pause','wait','hold on')){return say('Paused. Say next when you’re ready.')}
+    if(has(t,'finish','finished','i’m done','im done','end cooking'))return finish();
+    if(has(t,'gesture','wave'))return toggleGestures();
+  }
+  if(S.screen==='tasks'&&has(t,'finish','done','end cooking'))return finish();
+  if(S.screen==='done'&&has(t,'cook again','another','new recipe'))return go('home');
+  /* recipe search + adapt */
+  if(has(t,'start cooking','let’s cook','lets cook','start hands','begin')&&S.screen==='detail')return startCooking();
+  if(has(t,'apply')&&S.screen==='adapt')return applyAdapt();
+  if(has(t,'vegetarian','vegan','less spicy','spicy','mild','no chili','no garlic','adapt','healthier')){
+    if(S.screen==='home'||S.screen==='results'){openRecipe('pasta')}
+    return adaptVoice(t);
+  }
+  const hit=RECIPES.find(r=>r.kw.some(k=>t.includes(k)))||(has(t,'quick','fast','easy','pasta','craving','hungry','dinner','cook','recipe','show')?RECIPES[0]:null);
+  if(hit&&(S.screen==='home'||S.screen==='results'||S.screen==='detail'||S.screen==='scan')){
+    openRecipe(hit.id);return say(`How about ${hit.title}? It takes ${hit.time} minutes and ${ingCount(hit)}. Say start cooking when you’re ready, or tell me how to change it.`)
+  }
+  if(has(t,'browse','recipes'))return go('results');
+  if(has(t,'help','what can i say','commands'))return say('You can say next, repeat, start timer, how much time is left, swap ingredient, scan ingredients, or rate it five stars.');
+  askLLM(t);
+}
+const ingCount=r=>{const n=r.ing.filter(i=>isHave(i[2])).length;return `you have ${n} of ${r.ing.length} ingredients`};
+const isHave=k=>S.found.size?S.found.has(k)||k==='chili'&&false:!['garlic'].includes(k)&&!['chili'].includes(k)||(k==='chili');
+
+/* ---------- navigation ---------- */
+function go(s){
+  if(s!=='scan')S.upImg=null;
+  if(s!==S.screen){if(S.screen==='scan'&&s!=='scan')stopStream(true);}
+  S.screen=s;render();
+  if(s==='scan')startCamera('environment');
+  if(s==='cook'&&S.gestures)startCamera('user',true);
+}
+function openRecipe(id){if(S.screen==='home'||S.screen==='results')S.from=S.screen;S.rid=id;S.step=0;S.adapt=null;S.applied=false;S.timers=S.timers.filter(t=>t.keep);go('detail')}
+
+/* ---------- timers ---------- */
+function addTimer(name,secs,sub,step){
+  S.timers.push({id:Date.now()+Math.random(),name,total:secs,end:Date.now()+secs*1000,sub,step,fired:false});renderTimerBits();
+}
+function startStepTimer(spoken){
+  const st=R().steps[S.step];
+  if(!st.timer){if(spoken)say('This step doesn’t need a timer. Say next when you’re ready.');return}
+  if(S.timers.find(t=>t.name===st.timer[0]&&!t.fired)){return say(`${st.timer[0]} is already running.`)}
+  addTimer(st.timer[0],st.timer[1],st.timer[2],S.step+1);
+  buzz(30);say(`Timer started for ${Math.round(st.timer[1]/60*10)/10} minutes.`);
+}
+function tellTime(){
+  const act=S.timers.filter(t=>!t.fired).sort((a,b)=>a.end-b.end);
+  if(!act.length)return say('Nothing is running right now.');
+  const parts=act.slice(0,3).map(t=>{const s=Math.ceil((t.end-Date.now())/1000);return `${t.name}, ${Math.floor(s/60)} minutes ${s%60} seconds`});
+  say(parts.join('. '));
+}
+setInterval(()=>{
+  let changed=false;
+  S.timers.forEach(t=>{if(!t.fired&&Date.now()>=t.end){t.fired=true;changed=true;S.alert=`${t.name} is done. ${t.name==='Boil pasta'?'Pasta water is ready, drain it now.':'Check the pot now.'}`;buzz([200,100,200]);beep();say(S.alert);}});
+  if(changed||S.screen==='tasks'||S.screen==='cook'||S.screen==='home')renderTimerBits(changed);
+},500);
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.25,.5].forEach(d=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.2,a.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d+.2);o.start(a.currentTime+d);o.stop(a.currentTime+d+.22)})}catch(e){}}
+function activeTimers(){return S.timers.filter(t=>!t.fired)}
+
+/* ---------- cooking actions ---------- */
+function startCooking(){S.inCook=true;S.step=0;S.startedAt=Date.now();S.cmds=0;S.timers=[];S.alert=null;if(PREF.autoVoice)startRec();S.handsfree=PREF.autoVoice;keepAwake(true);go('cook');setTimeout(readStep,350)}
+let wl=null;async function keepAwake(on){try{if(on&&PREF.awake&&navigator.wakeLock)wl=await navigator.wakeLock.request('screen');else if(wl){await wl.release();wl=null}}catch(e){}}
+function readStep(){const s=R().steps[S.step];return say(`Step ${S.step+1} of ${R().steps.length}. ${s.t} ${s.d}`)}
+function nextStep(){
+  const r=R();if(S.step>=r.steps.length-1){return finish()}
+  S.step++;buzz(20);render();
+  const s=r.steps[S.step];
+  if(s.timer&&!S.timers.find(t=>t.name===s.timer[0])&&s.timer[2].includes('AUTO'))addTimer(s.timer[0],s.timer[1],s.timer[2],S.step+1);
+  readStep();
+}
+function prevStep(){if(S.step===0)return say('You’re on the first step.');S.step--;render();readStep()}
+function swapIngredient(t){
+  const r=R();
+  const map={garlic:'1 teaspoon of onion powder, or a pinch of asafoetida',onion:'a spring onion or shallot',paneer:'firm tofu or boiled chickpeas',basil:'a few mint leaves or dried oregano',tomato:'tomato puree or a spoon of ketchup',chili:'black pepper'};
+  const k=Object.keys(map).find(x=>t.includes(x))||(r.ing.find(i=>!isHave(i[2]))||[])[2]||'garlic';
+  say(`No problem. Instead of ${k}, use ${map[k]}.`);
+}
+function finish(){
+  S.inCook=false;keepAwake(false);
+  const mins=Math.max(1,Math.round((Date.now()-(S.startedAt||Date.now()))/60000));S.took=mins;
+  HIST.unshift({id:S.rid,title:R().title,mins,at:Date.now(),rating:0});HIST=HIST.slice(0,50);saveLS('ska-hist',HIST);
+  stopStream();S.gestures=false;S.timers.forEach(t=>t.fired=true);S.alert=null;S.rating=0;go('done');
+  say(`Dinner is ready! ${R().title}, cooked hands-free in ${mins} minutes. Say rate it five stars to save feedback.`);
+}
+function rate(n){S.rating=n;if(HIST[0]&&HIST[0].id===S.rid){HIST[0].rating=n;saveLS('ska-hist',HIST)}if(S.screen==='done')render();say(`Saved ${n} star${n>1?'s':''}. Enjoy your meal!`)}
+
+/* ---------- adapt ---------- */
+async function adaptVoice(t){
+  if(LLM.key){
+    try{caption('Adapting your recipe…','CHEF AI');const a=await adaptSmart(t);const edits=(a.edits||[]).filter(e=>R().ing[e.i]);
+      const ch=edits.map(e=>e.text||`${R().ing[e.i][0]} changed`).concat((a.notes||[]).slice(0,2));ch.push('Cook time unchanged');
+      S.adapt={said:t.replace(/^./,c=>c.toUpperCase())+'.',ch,edits};go('adapt');return say(a.spoken||'Done. Say apply to start cooking.')}
+    catch(e){/* fall back to local rules */}
+  }
+  const ch=[];
+  if(!R().ing.every(i=>isHave(i[2])))R().ing.filter(i=>!isHave(i[2])&&i[2]==='garlic').forEach(()=>ch.push('Garlic missing → added 1 tsp onion powder'));
+  if(has(t,'less spicy','mild','no chili')||!has(t,'more spicy'))ch.push('Chili flakes 2 tsp → ½ tsp');
+  if(has(t,'more spicy','spicier'))ch.push('Chili flakes 2 tsp → 3 tsp');
+  if(has(t,'vegan'))ch.push('Paneer → firm tofu');
+  ch.push(has(t,'vegan')?'Now vegan · cook time unchanged':'Still vegetarian · cook time unchanged');
+  S.adapt={said:t.replace(/^./,c=>c.toUpperCase())+'.',ch};
+  go('adapt');
+  say(`Done. ${ch.slice(0,-1).join('. ')}. ${ch[ch.length-1]}. Say apply to start cooking.`);
+}
+function applyAdapt(){
+  const r=R();
+  S.applied=true;
+  if(S.adapt&&S.adapt.edits){S.adapt.edits.forEach(e=>{const i=r.ing[e.i];if(!i)return;if(e.name)i[0]=e.name;if(e.amount)i[1]=e.amount})}
+  S.adapt.ch.forEach(c=>{if(/Chili/.test(c)){const i=r.ing.find(x=>x[2]==='chili');if(i)i[1]=/½/.test(c)?'½ tsp':'3 tsp'}if(/Paneer → firm tofu/.test(c)){const i=r.ing.find(x=>x[2]==='paneer');if(i){i[0]='Firm tofu';i[2]='paneer'}}});
+  startCooking();
+}
+
+/* ---------- camera ---------- */
+let video=null,loop=null,gl=null;
+async function startCamera(facing,pip){
+  stopStream(true);
+  const holder=pip?$('#pipv'):$('#camv');
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camFail('This browser has no camera access. Open the file in Chrome, Edge or Safari.',pip);return}
+  try{
+    S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:640},height:{ideal:480}},audio:false});
+    S.facing=facing;
+    const el=pip?$('#pipv'):$('#camv');if(!el){stopStream();return}
+    el.srcObject=S.stream;el.classList.toggle('rear',facing==='environment');await el.play().catch(()=>{});video=el;
+    const np=$('#nocam');if(np)np.remove();
+    if(pip){startGestureLoop()}else{startScanLoop()}
+  }catch(e){camFail(e&&e.name==='NotAllowedError'?'Camera permission was denied. Allow it from the address bar, then tap Retry.':'Couldn’t start the camera ('+(e&&e.name||'error')+').',pip)}
+}
+function camFail(msg,pip){
+  const st=$('#spill');if(st)st.textContent='Camera off';
+  const box=pip?$('#gtxt'):$('#camwrap');
+  if(pip){const t=$('#gtxt');if(t)t.textContent=msg;S.gestures=false;renderBars();return}
+  if(box&&!$('#nocam'))box.insertAdjacentHTML('beforeend',`<div class="nocam" id="nocam">${ic('camera').replace('class="i "','class="i" style="font-size:40px"')}<b>Camera unavailable</b><p>${esc(msg)}</p><button class="btn p press" data-act="retrycam" style="height:44px;font-size:15px">Retry</button><button class="btn s press" data-act="demo" style="height:44px;font-size:15px;color:#fff;border-color:#fff">Use sample ingredients</button></div>`);
+}
+function stopStream(keepGesture){
+  clearInterval(loop);loop=null;cancelAnimationFrame(gl);gl=null;
+  if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}
+  video=null;
+}
+function flipCam(){startCamera(S.facing==='user'?'environment':'user')}
+
+/* ---- ingredient scan (on-device colour analysis, not a trained model) ---- */
+const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+const GW=32,GH=40;
+function classify(r,g,b){
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,v=max/255,s=max?d/max:0;
+  let h=0;if(d){if(max===r)h=((g-b)/d)%6;else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360}
+  if(v<.18)return null;
+  if(s>.55&&v>.35&&(h<14||h>345))return 'tomato';
+  if(s>.28&&v>.28&&h>=75&&h<=165)return 'basil';
+  if(s>.18&&v>.35&&(h>=290&&h<=345))return 'onion';
+  if(s<.28&&v>.72&&h>=30&&h<=70)return 'paneer';
+  if(s>.25&&s<.7&&v>.55&&h>=32&&h<=50)return 'pasta';
+  return null;
+}
+let scanVotes={};
+function startScanLoop(){
+  const vw=video.videoWidth||640,vh=video.videoHeight||480;
+  loop=setInterval(()=>{
+    if(!video||video.readyState<2)return;
+    cv.width=GW;cv.height=GH;
+    // cover-fit the video into the viewfinder aspect
+    const el=$('#camwrap');if(!el)return;const ar=el.clientWidth/el.clientHeight;let sw=video.videoWidth,sh=video.videoHeight,sx=0,sy=0;
+    if(sw/sh>ar){const nw=sh*ar;sx=(sw-nw)/2;sw=nw}else{const nh=sw/ar;sy=(sh-nh)/2;sh=nh}
+    cx.drawImage(video,sx,sy,sw,sh,0,0,GW,GH);
+    const d=cx.getImageData(0,0,GW,GH).data,grid={};
+    for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=(y*GW+x)*4,k=classify(d[i],d[i+1],d[i+2]);if(k)(grid[k]=grid[k]||[]).push([x,y])}
+    const found=[];
+    Object.keys(grid).forEach(k=>{
+      const pts=grid[k];if(pts.length<14)return;
+      // largest blob by flood on cell set
+      const set=new Set(pts.map(p=>p[0]+','+p[1])),seen=new Set();let best=null;
+      for(const p of pts){const key=p[0]+','+p[1];if(seen.has(key))continue;const q=[p],cells=[];seen.add(key);
+        while(q.length){const c=q.pop();cells.push(c);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]){const nk=(c[0]+dx)+','+(c[1]+dy);if(set.has(nk)&&!seen.has(nk)){seen.add(nk);q.push([c[0]+dx,c[1]+dy])}}}
+        if(!best||cells.length>best.length)best=cells}
+      if(best.length<12)return;
+      const xs=best.map(c=>c[0]),ys=best.map(c=>c[1]);
+      const x0=Math.min(...xs),x1=Math.max(...xs)+1,y0=Math.min(...ys),y1=Math.max(...ys)+1;
+      const fill=best.length/((x1-x0)*(y1-y0));
+      found.push({k,x:x0/GW,y:y0/GH,w:(x1-x0)/GW,h:(y1-y0)/GH,conf:Math.min(.97,.55+best.length/260+fill*.2)});
+    });
+    drawBoxes(found);
+    found.forEach(f=>scanVotes[f.k]=(scanVotes[f.k]||0)+1);
+  },450);
+}
+function drawBoxes(f){
+  const b=$('#boxes');if(!b)return;
+  b.innerHTML=f.map(o=>`<div class="det" style="left:${o.x*100}%;top:${o.y*100}%;width:${o.w*100}%;height:${o.h*100}%"><span>${PANTRY_ALL[o.k].toUpperCase()} ${Math.round(o.conf*100)}%</span></div>`).join('');
+  const sp=$('#spill');if(sp)sp.textContent=f.length?`Scanning… ${f.length} found`:'Scanning… move closer';
+  window._cur=f;
+}
+async function capture(){
+  const img=frame();
+  if(S.scanMode==='dish'){
+    if(!LLM.key){caption('Dish recognition needs an AI key. Add one in Settings.','CHEF AI');return go('settings')}
+    if(!img)return say('The camera isn’t ready yet.');
+    return aiGenerate('',img);
+  }
+  if(LLM.key&&img){
+    caption('Looking at your ingredients…','CHEF AI');
+    try{const v=await visionScan(img);if(v){const known=(v.known||[]).filter(k=>PANTRY_ALL[k]);(v.other||[]).slice(0,6).forEach(n=>{const k=String(n).toLowerCase().replace(/[^a-z]/g,'');if(k&&!PANTRY_ALL[k]){PANTRY_ALL[k]=String(n).replace(/^./,c=>c.toUpperCase());known.push(k)}});known.forEach(k=>S.found.add(k));buzz(40);scanVotes={};go('results');
+      const other=[];
+      if(!known.length&&!other.length)return say('I couldn’t spot any ingredients. Try better light, or tap items on the next screen.');
+      return say(`I can see ${[...known.map(k=>PANTRY_ALL[k]),...other].join(', ')}. ${known.length?'Here’s what you can cook now.':'None of these match my recipes yet, so you can add items by hand.'}`)}}
+    catch(e){caption(aiErr(e),'CHEF AI')}
+  }
+  let keys=Object.keys(scanVotes).filter(k=>scanVotes[k]>=2);
+  if(!keys.length&&window._cur)keys=window._cur.map(o=>o.k);
+  if(!keys.length){return say('I couldn’t see any ingredients yet. Hold them closer to the camera in good light, then say capture again. You can also tap items on the next screen.')}
+  keys.forEach(k=>S.found.add(k));buzz(40);scanVotes={};
+  go('results');
+  say(`I found ${S.found.size} ingredient${S.found.size>1?'s':''}: ${[...S.found].map(k=>PANTRY_ALL[k]).join(', ')}. Here’s what you can cook now.`);
+}
+function demoScan(){['tomato','onion','basil','paneer','pasta'].forEach(k=>S.found.add(k));stopStream();go('results');say('Using sample ingredients: tomato, onion, basil, paneer and pasta. Here’s what you can cook.')}
+
+/* ---- gestures: wave = next, open palm = capture/repeat ---- */
+let prevFrame=null,xs=[],lastGesture=0,palmHold=0,mp=null;
+const gc=document.createElement('canvas'),gx=gc.getContext('2d',{willReadFrequently:true});
+function legacyGestureLoop(){
+  gc.width=48;gc.height=36;prevFrame=null;xs=[];palmHold=0;
+  const tick=()=>{
+    if(!S.stream||!video){return}
+    gx.drawImage(video,0,0,48,36);
+    const d=gx.getImageData(0,0,48,36).data,cur=new Uint8Array(48*36);let mE=0,mx=0,my=0,skin=0;
+    for(let i=0;i<48*36;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];cur[i]=(r*3+g*6+b)/10;
+      if(r>95&&g>40&&b>20&&r>g&&r>b&&r-Math.min(g,b)>15&&Math.abs(r-g)>10)skin++;
+      if(prevFrame){const df=Math.abs(cur[i]-prevFrame[i]);if(df>28){mE++;mx+=i%48;my+=Math.floor(i/48)}}}
+    const total=48*36,motion=mE/total,skinF=skin/total;
+    let msg='Camera on · show an open palm or wave',conf=0,sig=null;
+    if(motion>.025){xs.push(mx/mE);if(xs.length>14)xs.shift();}else{xs.shift()}
+    if(xs.length>=8){let rev=0,dir=0;for(let i=1;i<xs.length;i++){const dx=xs[i]-xs[i-1];if(Math.abs(dx)<1.2)continue;const nd=dx>0?1:-1;if(dir&&nd!==dir)rev++;dir=nd}
+      const span=Math.max(...xs)-Math.min(...xs);
+      if(rev>=2&&span>6){sig='wave';conf=Math.min(.98,.7+rev*.07+span/80)}}
+    if(false){palmHold++;if(palmHold>8){sig='palm';conf=Math.min(.97,.6+skinF)}}else if(motion>=.02||skinF<=.16){palmHold=0}
+    const now=Date.now();
+    const gt=$('#gtxt'),gl2=$('#gh'),gs=$('#gsub');
+    if(sig&&now-lastGesture>1600){
+      lastGesture=now;xs=[];palmHold=0;buzz(25);
+      if(gl2)gl2.textContent='GESTURE DETECTED';
+      if(sig==='wave'){if(gt)gt.textContent='Wave → Next step';if(gs)gs.textContent=`CAMERA ON · ${Math.round(conf*100)}% CONFIDENT`;if(S.screen==='cook')nextStep()}
+      else{if(gt)gt.textContent='Open palm → Repeat step';if(gs)gs.textContent=`CAMERA ON · ${Math.round(conf*100)}% CONFIDENT`;if(S.screen==='cook')readStep();else if(S.screen==='scan')capture()}
+    }else if(now-lastGesture>2500){if(gl2)gl2.textContent='WATCHING';if(gt)gt.textContent='Swipe your open hand for the next step';if(gs)gs.textContent='CAMERA ON · '+(skinF>.1?'HAND IN VIEW':'NO HAND YET')}
+    prevFrame=cur;
+    setTimeout(()=>{gl=requestAnimationFrame(tick)},90);
+  };
+  gl=requestAnimationFrame(tick);
+}
+
+/* ---- gestures v2: on-device hand tracking (MediaPipe Gesture Recognizer, free, no API key) ---- */
+let GR=null,grP=null,grFail=false;
+function ensureGR(){
+  if(GR)return Promise.resolve(GR);if(grFail)return Promise.resolve(null);
+  if(!grP)grP=(async()=>{
+    try{
+      const base='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+      const m=await import(base+'/vision_bundle.mjs');
+      const fs=await m.FilesetResolver.forVisionTasks(base+'/wasm');
+      const opt=d=>({baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',delegate:d},runningMode:'VIDEO',numHands:1,minHandDetectionConfidence:.6,minHandPresenceConfidence:.6,minTrackingConfidence:.5});
+      try{GR=await m.GestureRecognizer.createFromOptions(fs,opt('GPU'))}catch(e){GR=await m.GestureRecognizer.createFromOptions(fs,opt('CPU'))}
+    }catch(e){grFail=true;GR=null}
+    return GR})();
+  return grP;
+}
+let gHist=[],gLast=0,palmT=0,thumbT=0,palmLock=false,lastVT=-1;
+/* swipe = open hand travels sideways; palm = open palm held still ~1s; thumb = thumbs-up held ~0.7s */
+function detectGesture(v){
+  const now=performance.now(),r=GR.recognizeForVideo(v,now);
+  const g=r.gestures&&r.gestures[0]&&r.gestures[0][0],lm=r.landmarks&&r.landmarks[0];
+  if(!g||!lm){gHist.length=0;palmT=0;thumbT=0;palmLock=false;return{k:'none'}}
+  const name=g.categoryName,score=g.score;
+  gHist.push([now,lm[0].x]);while(gHist.length&&now-gHist[0][0]>800)gHist.shift();
+  const xs=gHist.map(h=>h[1]),span=Math.max(...xs)-Math.min(...xs),net=Math.abs(gHist[gHist.length-1][1]-gHist[0][1]);
+  const info={name,score,span};
+  if(now-gLast<1500)return{k:'cool',...info};
+  const fire=k=>{gLast=now;gHist.length=0;palmT=0;thumbT=0;return{k,...info}};
+  if(name!=='Closed_Fist'&&gHist.length>=4&&span>.28&&net>.22)return fire('swipe');
+  if(name==='Open_Palm'&&score>.6&&span<.08){if(!palmT)palmT=now;if(!palmLock&&now-palmT>900){palmLock=true;return fire('palm')}}else{palmT=0;if(span>.1)palmLock=false}
+  if(name==='Thumb_Up'&&score>.7){if(!thumbT)thumbT=now;if(now-thumbT>700)return fire('thumb')}else thumbT=0;
+  return{k:'hand',...info};
+}
+async function startGestureLoop(){
+  const gt0=$('#gtxt');if(gt0)gt0.textContent='Loading hand tracking…';
+  const g=await ensureGR();
+  if(!g){const t=$('#gtxt');if(t)t.textContent='Hand tracking needs internet once. Using basic wave detection.';return legacyGestureLoop()}
+  gHist.length=0;palmT=0;thumbT=0;palmLock=false;
+  const tick=()=>{
+    if(!S.stream||!video){return}
+    if(video.readyState>=2&&video.currentTime!==lastVT){
+      lastVT=video.currentTime;
+      const e=detectGesture(video),gh=$('#gh'),gt=$('#gtxt'),gs=$('#gsub');
+      if(e.k==='swipe'||e.k==='palm'||e.k==='thumb'){
+        buzz(25);
+        if(gh)gh.textContent='GESTURE DETECTED';
+        const pct=Math.round((e.score||.9)*100);
+        if(e.k==='swipe'){if(gt)gt.textContent='Swipe → Next step';if(S.screen==='cook')nextStep()}
+        if(e.k==='palm'){if(gt)gt.textContent='Open palm → Repeat step';if(S.screen==='cook')readStep()}
+        if(e.k==='thumb'){if(gt)gt.textContent='Thumbs up → Start timer';if(S.screen==='cook')startStepTimer(true)}
+        if(gs)gs.textContent='ON-DEVICE · '+pct+'%';
+      }else if(Date.now()-(gLast?Date.now()-(performance.now()-gLast):0)>0&&performance.now()-gLast>2500){
+        if(gh)gh.textContent='WATCHING';
+        if(gt)gt.textContent='Swipe your open hand for the next step';
+        if(gs)gs.textContent=e.k==='none'?'CAMERA ON · NO HAND YET':'HAND IN VIEW · '+String(e.name||'').replace('_',' ').toUpperCase();
+      }
+    }
+    setTimeout(()=>{gl=requestAnimationFrame(tick)},70);
+  };
+  gl=requestAnimationFrame(tick);
+}
+function toggleGestures(){
+  S.gestures=!S.gestures;
+  if(S.gestures){render();startCamera('user',true);say('Gestures on. Swipe your open hand for the next step, hold an open palm to repeat, or give a thumbs up to start the timer.')}
+  else{stopStream();render();say('Gestures off.')}
+}
+/* scan-screen gesture toggle */
+async function scanGesture(){
+  const on=!S.scanGesture;S.scanGesture=on;
+  if(!on){say('Gesture capture off.');renderBars();return}
+  say('Gesture capture on. Hold an open palm to the camera for one second.');renderBars();
+  const g=await ensureGR();
+  if(!g){S.scanGesture=false;renderBars();return say('Hand tracking could not load. Say capture or tap the shutter instead.')}
+  gHist.length=0;palmT=0;palmLock=false;
+  const t=()=>{if(!S.scanGesture||S.screen!=='scan')return;
+    if(video&&video.readyState>=2){const e=detectGesture(video),sp=$('#spill');
+      if(e.k==='palm'){S.scanGesture=false;capture();return}
+      if(sp&&e.name==='Open_Palm')sp.textContent='Palm seen… hold still'}
+    setTimeout(t,90)};t();
+}
+/* ---------- rendering ---------- */
+const app=$('#app');
+function status(){return ''}
+function hfBar(hint,live){return `<div class="bar" id="hfbar" role="button" tabindex="0" data-act="hf" aria-label="Toggle hands-free voice"><div class="orb">${ic('mic')}</div><p id="hint">${esc(hint)}</p><div class="wave ${live?'live':''}">${'<span></span>'.repeat(5)}</div></div>`}
+function backBtn(go2,label='Back'){return `<button class="icon-btn press" data-go="${go2}" aria-label="${label}">${ic('back')}</button>`}
+function recipeCard(r){const have=r.ing.filter(i=>isHave(i[2])).length;return `<button class="card recipe press" data-recipe="${r.id}"><div class="ph ${photoOf(r.id)?'photo':''}"${photoStyle(r.id)}>${ic('chef')}</div><div style="flex:1;min-width:0"><b>${esc(r.title)}</b><small>${r.time} MIN · ${r.level.toUpperCase()}</small><span class="tag">${S.found.size?Math.round(have/r.ing.length*100)+'% MATCH':esc(r.tag)}</span>${allergyHit(r)?'<span class="tag warn">CONTAINS '+esc(allergyHit(r).toUpperCase())+'</span>':''}</div></button>`}
+
+const VIEWS={
+home(){
+  const a=activeTimers().sort((x,y)=>x.end-y.end)[0];
+  return `${status()}<div class="body">
+   <div class="greet"><div><div class="eyebrow" style="color:var(--accent)">${PREF.name?'HELLO, '+esc(PREF.name.toUpperCase()):'HANDS-FREE KITCHEN'}</div><h1>What are we cooking?</h1></div><div class="actions"><button class="avatar press" data-go="profile" aria-label="Your profile">${esc((PREF.name||'C')[0].toUpperCase())}</button><button class="icon-btn gear press ${LLM.key?'on':''}" data-act="settings" aria-label="Settings">${ic('gear')}</button></div></div>
+   ${a?`<button class="pill-timer press" data-go="tasks">${ic('timer')}<span style="flex:1" data-bind="homet">${esc(a.name)} · ${fmt((a.end-Date.now())/1000)} left</span>${ic('chev')}</button>`:''}
+   <button class="voice-card press" data-act="talk" aria-label="Tell me what you’re craving"><div style="flex:1;min-width:0"><div class="eyebrow">VOICE FIRST</div><h3>Tell me what you’re craving</h3><small>Try: “Show me a quick pasta”</small></div><div class="mic-ring ${recOn&&S.listenOnce?'live':''}" id="homering"><div class="mic-orb">${ic('mic')}</div></div></button>
+   <div class="quick"><button class="card press" data-go="scan"><div class="qi">${ic('camera')}</div><div><b>Scan ingredients</b><span>CAMERA</span></div></button><button class="card press" data-go="results"><div class="qi">${ic('book')}</div><div><b>Browse recipes</b><span>VOICE + TOUCH</span></div></button></div>
+   <div class="label">SUGGESTED TONIGHT</div>${recipeCard(suggest())}
+  </div><div class="bottom">${hfBar(S.handsfree?'Listening… say “Hey Chef”':'Say “Hey Chef” to start',S.handsfree&&recOn)}</div>`},
+scan(){return `${status()}<div class="body" style="padding-bottom:8px;gap:12px">
+   <div class="top"><button class="icon-btn press" data-go="home" aria-label="Close" style="background:rgba(255,255,255,.14);border:0;color:#fff">${ic('x')}</button><h2 style="flex:1;font-size:22px">Scan ingredients</h2><span class="tag">SCAN</span></div>
+   <div class="cam" id="camwrap"><video id="camv" playsinline muted></video><div class="boxes" id="boxes"></div><div class="status-pill" id="spill">Starting camera…</div></div>
+   <div class="seg dk" role="group" aria-label="Scan mode"><button class="press ${S.scanMode!=='dish'?'on':''}" data-scanmode="ing">Ingredients</button><button class="press ${S.scanMode==='dish'?'on':''}" data-scanmode="dish">Identify dish</button></div><div class="center"><div style="font-weight:600;font-size:16px">${S.scanMode==='dish'?'Point at a finished dish':'Hold ingredients in frame'}</div><div class="eyebrow" style="color:var(--accent-soft);margin-top:4px">${LLM.key?'AI VISION ON · SAY “CAPTURE”':'BASIC COLOUR SCAN · ADD AI KEY FOR ACCURACY'}</div></div>
+   <div class="ctrls"><button class="cbtn press ${recOn?'act':''}" data-act="talk" aria-label="Voice"><i>${ic('mic')}</i>VOICE</button><button class="cbtn press" data-act="scanup" aria-label="Use a photo"><i>${ic('image')}</i>PHOTO</button><button class="shutter press" data-act="capture" aria-label="Capture ingredients"><i></i></button><button class="cbtn press ${S.scanGesture?'act':''}" data-act="scangesture" aria-label="Gesture capture"><i>${ic('hand')}</i>GESTURE</button></div>
+   </div><div style="height:max(16px,env(safe-area-inset-bottom));flex:none"></div>`},
+results(){
+  const q=(S.q||'').toLowerCase().trim(),cf=S.cf||'All',cuis=['All',...new Set(RECIPES.map(r=>r.cuisine).filter(Boolean))];
+  const base=RECIPES.filter(r=>(cf==='All'||r.cuisine===cf)&&(!q||(r.title+' '+r.cuisine+' '+r.ing.map(i=>i[0]).join(' ')).toLowerCase().includes(q)));
+  const shown=S.showAll?base:base.filter(okDiet),hidden=base.length-shown.length,hv=r=>r.ing.filter(i=>isHave(i[2])).length/r.ing.length;
+  const list=S.found.size?shown.slice().sort((a,b)=>hv(b)-hv(a)):shown;
+  return `${status()}<div class="body"><div class="hdr"><h2>${S.found.size?'Your ingredients':'Recipes'}</h2></div>
+   <label class="srch">${ic('search')}<input id="qin" class="sin" type="search" placeholder="Search dishes, cuisines, ingredients" value="${esc(S.q||'')}" aria-label="Search recipes"></label>
+   <div class="chips hs" role="group" aria-label="Cuisine">${cuis.map(c=>`<button class="chip press ${c===cf?'on':''}" data-cf="${esc(c)}" aria-pressed="${c===cf}">${esc(c)}</button>`).join('')}</div>
+   <button class="btn s press aibtn" data-act="aigen">${ic('sparkle')}<span>Create any recipe with AI</span></button>
+   ${S.found.size?`<div class="label">${S.found.size} INGREDIENT${S.found.size>1?'S':''} DETECTED</div><div class="chips">${[...S.found].map(k=>`<button class="chip on press" data-rm="${k}" aria-label="Remove ${PANTRY_ALL[k]}">${PANTRY_ALL[k]} ${ic('x')}</button>`).join('')}</div>`:''}
+   <div class="label">ADD INGREDIENTS YOU HAVE</div><div class="chips hs">${Object.keys(PANTRY_ALL).filter(k=>!S.found.has(k)).map(k=>`<button class="chip press" data-add="${k}">+ ${PANTRY_ALL[k]}</button>`).join('')||'<span class="chip">All added</span>'}</div>
+   <div class="label">${S.found.size?'READY TO COOK NOW':'ALL RECIPES'} · ${list.length}</div>${list.map(recipeCard).join('')||'<div class="card" style="padding:20px;text-align:center;font-weight:600">No match. Try “Create any recipe with AI”.</div>'}
+   ${hidden?`<button class="chip press" data-act="showall">${hidden} hidden by your diet · Show</button>`:''}
+  </div><div class="bottom">${hfBar('Say “Show me the pasta”',S.handsfree&&recOn)}</div>`},
+detail(){const r=R(),miss=r.ing.filter(i=>!isHave(i[2])).length;
+  return `${status()}<div class="body"><div class="hdr">${backBtn(S.from||'results')}<h2>Recipe</h2><button class="icon-btn press ${FAVS.includes(r.id)?'favon':''}" data-fav="${r.id}" aria-pressed="${FAVS.includes(r.id)}" aria-label="Save recipe">${ic('heart',FAVS.includes(r.id)?'f':'')}</button></div>
+   <div class="hero ${photoOf(r.id)?'photo':''}"${photoStyle(r.id)}>${ic('chef')}<button class="addphoto press" data-act="photo" aria-label="${photoOf(r.id)?'Change':'Add'} photo of ${esc(r.title)}">${ic('camera')}<span>${photoOf(r.id)?'Change photo':'Add photo'}</span></button></div><h1 class="rtitle">${esc(r.title)}</h1>
+   <div class="chips"><span class="chip">${r.time} MIN</span><span class="chip">${r.serv} SERVINGS</span><span class="chip">${r.level.toUpperCase()}</span>${r.cuisine?`<span class="chip">${esc(r.cuisine.toUpperCase())}</span>`:''}${allergyHit(r)?`<span class="chip" style="color:#8a2a14">CONTAINS ${esc(allergyHit(r).toUpperCase())}</span>`:''}</div>
+   <div class="label">INGREDIENTS · ${r.ing.length-miss} OF ${r.ing.length} IN YOUR KITCHEN</div>
+   <ul class="card ing">${r.ing.map(i=>{const h=isHave(i[2]);return `<li class="${h?'':'miss'}">${h?ic('check'):ic('circle')}<span>${esc(i[0])}</span><em>${h?esc(i[1]):'MISSING'}</em></li>`}).join('')}</ul>
+  </div><div class="bottom"><button class="btn s press" data-act="adapt">Adapt with voice</button><button class="btn p press" data-act="cook">Start hands-free cooking</button></div>`},
+adapt(){const a=S.adapt||{said:'',ch:[]};
+  return `${status()}<div class="body"><div class="top"><button class="icon-btn press" data-go="detail" aria-label="Close">${ic('x')}</button><h2 style="flex:1;font-size:22px">Voice assistant</h2></div>
+   <div class="orb-wrap ${recOn?'live':''}"><i class="r3"></i><i class="r2"></i><i class="o">${ic('mic')}</i></div>
+   <div class="eyebrow center" style="color:var(--accent)">${recOn?'LISTENING…':'TAP THE ORB TO SPEAK'}</div>
+   <div class="card said"><div class="eyebrow" style="color:var(--ink-soft)">YOU SAID</div><p id="heard">${a.said?'“'+esc(a.said)+'”':'Try “Make it vegetarian and less spicy”'}</p></div>
+   ${a.ch.length?`<div class="resp"><div class="head">${ic('sparkle')}<span class="eyebrow">CHEF AI · RECIPE ADAPTED</span></div>${a.ch.map(c=>`<div class="chg">${ic('check')}<span>${esc(c)}</span></div>`).join('')}</div>`:''}
+  </div><div class="bottom"><button class="btn p press" data-act="apply" ${a.ch.length?'':'disabled'}>Apply &amp; start cooking</button><button class="btn s press" data-go="detail">Back to recipe</button></div>`},
+cook(){const r=R(),s=r.steps[S.step],pct=((S.step+1)/r.steps.length)*100,tm=s.timer&&S.timers.find(t=>t.name===s.timer[0]);
+  const left=tm&&!tm.fired?(tm.end-Date.now())/1000:(s.timer?s.timer[1]:0);
+  return `${status()}<div class="body"><div class="top"><button class="icon-btn press" data-act="exitcook" aria-label="Close">${ic('x')}</button><span class="t">${esc(r.title.toUpperCase())}</span>
+    <button class="hint press ${S.gestures?'live':''}" data-act="gest" aria-pressed="${S.gestures}">${ic('hand')}<span>${S.gestures?'GESTURE ON':'SWIPE = NEXT'}</span></button></div>
+   ${S.gestures?`<div class="card gfb"><div class="pip"><video id="pipv" playsinline muted></video>${ic('hand')}</div><div style="min-width:0"><div class="eyebrow" id="gh">WATCHING</div><h3 id="gtxt">Starting camera…</h3><small id="gsub">CAMERA ON</small></div></div>`:''}
+   <div><div class="eyebrow" style="color:var(--ink-soft);margin-bottom:8px">STEP ${S.step+1} OF ${r.steps.length}</div><div class="track"><div style="width:${pct}%"></div></div></div>
+   <div class="now"><div class="eyebrow">NOW</div><h2>${esc(s.t)}</h2><p>${esc(s.d)}</p></div>
+   <div class="card cue"><div class="ph">${ic('chef')}</div><div><div class="eyebrow">LOOK FOR</div><p>${esc(s.cue)}</p></div></div>
+   ${s.timer?`<button class="timer-card press" data-act="steptimer">${ic('timer')}<div style="flex:1;text-align:left"><b data-bind="steptime">${fmt(left)}</b><small>${tm&&!tm.fired?esc(s.timer[2]):'Say “Start timer”'}</small></div>${ic('chev')}</button>`:''}
+   <div class="chips">${['Next','Repeat','Swap ingredient'].map(c=>`<button class="chip press" data-say="${c.toLowerCase()}">“${c}”</button>`).join('')}</div>
+  </div><div class="bottom">${hfBar(recOn?'Listening… say “Next step”':'Tap to turn on voice',recOn)}<div class="row"><button class="btn s press" data-act="prev" style="width:110px;flex:none;padding:0">Back</button><button class="btn p press" data-act="next" style="flex:1">${S.step>=r.steps.length-1?'Finish':'Next step'}</button></div></div>`},
+tasks(){const all=S.timers.slice().sort((a,b)=>(a.fired-b.fired)||(a.end-b.end));
+  return `${status()}<div class="body"><div class="hdr">${S.inCook?backBtn('cook'):''}<h2>Active timers</h2></div>
+   ${S.alert?`<div class="alert" role="alert"><div class="bell">${ic('bell')}</div><div><div class="eyebrow">ALERT · NOW</div><p>${esc(S.alert)}</p></div></div>`:''}
+   <div class="label">RUNNING · ${activeTimers().length} TASK${activeTimers().length===1?'':'S'}</div>
+   ${all.map(t=>{const left=(t.end-Date.now())/1000,p=t.fired?100:100-(left/t.total*100);return `<div class="card task ${t.fired?'done':''}" data-tid="${t.id}"><div class="st">${t.fired?ic('check'):ic('timer')}</div><div class="tx"><b>${esc(t.name)}</b><div class="tr"><div style="width:${p}%"></div></div><small>${t.step?'STEP '+t.step+' · ':''}${t.fired?'COMPLETED':esc(t.sub||'RUNNING')}</small></div><div class="tm" data-bind="tm">${t.fired?'DONE':fmt(left)}</div>${t.fired?'':`<button class="x press" data-canceltid="${t.id}" aria-label="Cancel ${esc(t.name)}">${ic('x')}</button>`}</div>`}).join('')||`<div class="card" style="padding:24px;text-align:center;font-weight:600;color:var(--ink-soft)">No timers yet. Say “Start timer” while cooking.</div>`}
+  </div><div class="bottom">${hfBar('Ask “How much time is left?”',recOn)}${S.inCook?`<div class="row"><button class="btn s press" data-go="cook" style="width:110px;flex:none;padding:0">Back</button><button class="btn p press" data-act="finish" style="flex:1">Finish cooking</button></div>`:''}</div>`},
+profile(){
+  const rated=HIST.filter(h=>h.rating),avg=rated.length?(rated.reduce((x,h)=>x+h.rating,0)/rated.length).toFixed(1):'–',favs=FAVS.map(id=>RECIPES.find(r=>r.id===id)).filter(Boolean);
+  const opt=(k,arr)=>`<div class="seg" role="group">${arr.map(([v,l])=>`<button class="press ${String(PREF[k])===String(v)?'on':''}" data-pref="${k}" data-v="${v}" aria-pressed="${String(PREF[k])===String(v)}">${l}</button>`).join('')}</div>`;
+  const CU=['Indian','Italian','Chinese','Mexican','Japanese','Greek','Middle Eastern','Thai','French','American'];
+  return `${status()}<div class="body"><div class="hdr"><h2>Profile</h2><button class="icon-btn gear press ${LLM.key?'on':''}" data-go="settings" aria-label="Settings">${ic('gear')}</button></div>
+   <div class="card phero"><div class="avatar big">${esc((PREF.name||'C')[0].toUpperCase())}</div><div style="flex:1;min-width:0"><label class="eyebrow" for="namein" style="color:var(--ink-soft)">YOUR NAME</label><input id="namein" class="field" placeholder="Add your name" value="${esc(PREF.name)}" maxlength="24" autocomplete="given-name" style="margin-top:6px"></div></div>
+   <div class="stats"><div class="card"><b>${HIST.length}</b><small>COOKED</small></div><div class="card"><b>${favs.length}</b><small>SAVED</small></div><div class="card"><b>${avg}</b><small>AVG RATING</small></div></div>
+   <div class="label">FOOD PREFERENCES</div>
+   <div class="card pcard"><h3>Diet</h3>${opt('diet',[['any','Anything'],['veg','Veg'],['egg','Egg'],['vegan','Vegan']])}<h3>Spice level</h3>${opt('spice',[['mild','Mild'],['medium','Medium'],['hot','Hot']])}<h3>Cooking level</h3>${opt('skill',[['Easy','Beginner'],['Medium','Home cook'],['Hard','Confident']])}<h3>Usual servings</h3>${opt('serv',[[1,'1'],[2,'2'],[4,'4'],[6,'6']])}</div>
+   <div class="card pcard"><h3>Cuisines you love</h3><div class="chips">${CU.map(c=>`<button class="chip press ${PREF.cuis.includes(c)?'on':''}" data-cuis="${c}" aria-pressed="${PREF.cuis.includes(c)}">${c}</button>`).join('')}</div>
+    <label for="allergyin" class="eyebrow" style="color:var(--ink-soft)">ALLERGIES OR FOODS TO AVOID</label><input id="allergyin" class="field" placeholder="e.g. peanut, shellfish" value="${esc(PREF.allergy)}" autocomplete="off"></div>
+   <div class="label">SAVED RECIPES</div>${favs.map(recipeCard).join('')||'<div class="card" style="padding:18px;text-align:center;font-weight:600;color:var(--ink-soft)">Tap the heart on any recipe to save it here.</div>'}
+   ${HIST.length?`<div class="label">RECENTLY COOKED</div><div class="card">${HIST.slice(0,5).map(h=>`<div class="hrow"><b>${esc(h.title)}</b><small>${h.mins} MIN${h.rating?' · '+h.rating+'★':''}</small></div>`).join('')}</div>`:''}
+  </div>`},
+settings(){
+  const pr=PROVIDERS[AI.p],ks=keyState.t?keyState:(LLM.key?{t:'Key saved on this device',cls:'ok'}:{t:'No key yet. Basic voice commands only',cls:''});
+  const tog=(k,t,d)=>`<button class="card srow press" role="switch" aria-checked="${!!PREF[k]}" data-tog="${k}"><span><b>${t}</b><small>${d}</small></span><i class="sw ${PREF[k]?'on':''}"></i></button>`;
+  const opt=(k,arr)=>`<div class="seg" role="group">${arr.map(([v,l])=>`<button class="press ${String(PREF[k])===String(v)?'on':''}" data-pref="${k}" data-v="${v}" aria-pressed="${String(PREF[k])===String(v)}">${l}</button>`).join('')}</div>`;
+  return `${status()}<div class="body"><div class="hdr">${backBtn('profile')}<h2>Settings</h2></div>
+   <div class="label">AI PROVIDER</div><p class="note2">Powers open questions, camera recognition and recipe creation. Our pick to start: Groq (free and fast). Choose OpenAI or Claude for the most accurate photo recognition.</p>
+   ${Object.entries(PROVIDERS).map(([k,p])=>`<button class="card prov press ${k===AI.p?'sel':''}" data-prov="${k}" role="radio" aria-checked="${k===AI.p}"><div style="flex:1;min-width:0"><div class="prow"><b>${p.name}</b><span class="tag ${p.rec?'':'soft'}">${p.rec?'RECOMMENDED':p.tag}</span></div><small>${p.why}</small></div></button>`).join('')}
+   <div class="card pcard"><label class="eyebrow" for="keyin" style="color:var(--ink-soft)">${pr.name.toUpperCase()} API KEY</label>
+    <input class="field" id="keyin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key" value="${esc(LLM.key)}">
+    ${AI.p==='custom'?`<label class="eyebrow" for="basein" style="color:var(--ink-soft)">BASE URL</label><input class="field" id="basein" placeholder="https://your-host/v1" value="${esc(AI.base)}" autocomplete="off">`:''}
+    <label class="eyebrow" for="modelin" style="color:var(--ink-soft)">MODEL</label><input class="field" id="modelin" placeholder="${esc(pr.model||'model name')}" value="${esc(AI.models[AI.p]||'')}" autocomplete="off" autocapitalize="off">
+    <div class="state ${ks.cls}" role="status"><i></i><span>${esc(ks.t)}</span></div>
+    <button class="btn p press" data-act="savekey">Save &amp; test</button><button class="btn s press" data-act="removekey" style="height:48px">Remove key</button>
+    <p class="note2" style="font-size:12px">${pr.url?'Get a key at '+pr.url+'. ':''}Stored only in this browser. Treat it like a password and never share it.</p></div>
+   <div class="label">VOICE</div>${tog('speak','Spoken replies','Chef AI talks you through each step')}
+   <div class="card pcard"><h3>Speaking speed</h3>${opt('rate',[[0.9,'Slow'],[1,'Normal'],[1.15,'Fast']])}<h3>Language</h3>${opt('lang',[['en-IN','English (IN)'],['en-US','English (US)'],['hi-IN','हिन्दी']])}</div>
+   <div class="label">COOKING</div>${tog('autoVoice','Hands-free on start','Turn the microphone on when cooking begins')}${tog('awake','Keep screen awake','Stops the screen sleeping while you cook')}${tog('haptics','Vibration','Small buzz for steps and timers')}
+   <div class="label">DATA</div><div class="card pcard"><button class="btn s press" data-clear="hist" style="height:48px">Clear cooking history</button><button class="btn s press" data-clear="airec" style="height:48px">Remove AI-created recipes</button><button class="btn s press" data-clear="all" style="height:48px;color:#8a2a14;border-color:#8a2a14">Reset everything</button></div>
+  </div>`},
+done(){return `${status()}<div class="body" style="align-items:stretch">
+   <div class="ok">${ic('check')}</div><h1 class="center" style="font-size:34px;margin-top:8px">Dinner is ready!</h1>
+   <p class="center" style="font-weight:600;font-size:17px;line-height:23px;color:var(--ink-soft);padding:0 20px">${esc(R().title)} · cooked hands-free in ${S.took||28} min</p>
+   <div class="stats"><div class="card"><b>${S.took||28} min</b><small>TIME</small></div><div class="card"><b>${R().steps.length} / ${R().steps.length}</b><small>STEPS</small></div><div class="card"><b>${S.cmds}</b><small>VOICE CMDS</small></div></div>
+   <div class="card" style="padding:12px 16px"><div class="row" style="justify-content:center;gap:8px;font-weight:600;font-size:16px;padding:4px 0 6px">${ic('mic','')}<span>Say “Rate it 5 stars” to save feedback</span></div><div class="stars">${[1,2,3,4,5].map(n=>`<button class="${n<=S.rating?'on':''}" data-rate="${n}" aria-label="${n} star${n>1?'s':''}">${ic('star')}</button>`).join('')}</div></div>
+  </div><div class="bottom"><button class="btn p press" data-go="home">Cook something else</button><button class="btn s press" data-go="home">Back to home</button></div>`}
+};
+function tabbar(active){
+  const n=activeTimers().length;
+  return `<nav class="tabbar" aria-label="Main navigation">${[['home','Home','home'],['scan','Scan','camera'],['results','Recipes','book'],['tasks','Timers','timer'],['profile','Profile','user']].map(([k,l,i])=>`<button class="tab press ${active===k?'on':''}" data-go="${k}" ${k==='tasks'&&n?`aria-label="Timers, ${n} running"`:''} ${active===k?'aria-current="page"':''}>${ic(i,'o')}<span>${l}</span>${k==='tasks'&&n?`<b class="badge" aria-hidden="true">${n}</b>`:''}</button>`).join('')}</nav>`}
+const TABS=['home','results','tasks','profile','settings'];
+function showTabs(){return TABS.includes(S.screen)&&!(S.screen==='tasks'&&S.inCook)}
+var _lastScreen=null;
+function render(){
+  const _b=$('.body'),_st=(_b&&app.firstElementChild&&app.firstElementChild.dataset.screen===S.screen)?_b.scrollTop:0;
+  const v=VIEWS[S.screen]()+(showTabs()?tabbar(S.screen==='settings'?'profile':S.screen):'');
+  const dark=S.screen==='scan',_enter=_lastScreen!==S.screen;_lastScreen=S.screen;
+  app.innerHTML=`<section class="screen on ${_enter?'enter':''} ${dark?'dark':''} ${showTabs()?'has-tabs':''}" data-screen="${S.screen}">${v}</section>`;
+  fixStars();if(_st){const b2=$('.body');if(b2)b2.scrollTop=_st}
+  if(S.stream){const el=S.screen==='scan'?$('#camv'):(S.screen==='cook'&&S.gestures?$('#pipv'):null);
+    if(el){el.srcObject=S.stream;el.classList.toggle('rear',S.facing==='environment');el.play().catch(()=>{});video=el}}
+  if(S.screen==='cook'&&S.gestures&&!S.stream)startCamera('user',true);
+}
+function fixStars(){$$('.stars svg').forEach(s=>{const on=s.closest('button').classList.contains('on');s.style.fill=on?'currentColor':'none';s.style.stroke='currentColor';s.style.strokeWidth=on?'0':'1.6'})}
+function renderBars(){const b=$('#hfbar');if(!b){if(S.screen==='adapt'||S.screen==='scan'||S.screen==='home')render();return}
+  const live=recOn||recWanted;$('.wave',b).classList.toggle('live',live);
+  const h=$('#hint');if(h)h.textContent=S.screen==='cook'?(live?'Listening… say “Next step”':'Tap to turn on voice'):S.screen==='tasks'?'Ask “How much time is left?”':S.screen==='home'?(live?'Listening… say “Hey Chef”':'Say “Hey Chef” to start'):h.textContent}
+function renderTimerBits(force){
+  if(force&&(S.screen==='tasks')){render();return}
+  if(S.screen==='tasks'){$$('.task').forEach(el=>{const t=S.timers.find(x=>String(x.id)===el.dataset.tid);if(!t||t.fired)return;const left=(t.end-Date.now())/1000;$('.tm',el).textContent=fmt(left);$('.tr>div',el).style.width=(100-left/t.total*100)+'%'})}
+  const h=$('[data-bind=homet]');if(h&&S.screen==='home'){const a=activeTimers().sort((x,y)=>x.end-y.end)[0];if(a)h.textContent=`${a.name} · ${fmt((a.end-Date.now())/1000)} left`;else render()}
+  const st=$('[data-bind=steptime]');if(st&&S.screen==='cook'){const s=R().steps[S.step];const tm=s.timer&&S.timers.find(t=>t.name===s.timer[0]);if(tm&&!tm.fired)st.textContent=fmt((tm.end-Date.now())/1000);else if(tm&&tm.fired)st.textContent='00:00'}
+  if(force&&S.screen==='cook'){caption(S.alert||'Timer done','CHEF AI')}
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  if(e.target.id==='sheet'){closeSettings();return}
+  const t=e.target.closest('[data-go],[data-act],[data-recipe],[data-say],[data-add],[data-rm],[data-rate],[data-canceltid],[data-fav],[data-prov],[data-tog],[data-pref],[data-cuis],[data-cf],[data-scanmode],[data-clear]');if(!t)return;
+  if(t.dataset.go){go(t.dataset.go);return}
+  if(t.dataset.fav){const i=FAVS.indexOf(t.dataset.fav);i<0?FAVS.unshift(t.dataset.fav):FAVS.splice(i,1);saveLS('ska-favs',FAVS);render();return}
+  if(t.dataset.prov){AI.p=t.dataset.prov;keyState={t:'',cls:''};saveAI();render();return}
+  if(t.dataset.tog){const k=t.dataset.tog;PREF[k]=!PREF[k];if(k==='speak'){S.muted=!PREF.speak;if(S.muted)try{speechSynthesis.cancel()}catch(e){}}savePrefs();render();return}
+  if(t.dataset.pref){const k=t.dataset.pref,v=t.dataset.v;PREF[k]=(v!==''&&!isNaN(+v))?+v:v;if(k==='lang'){if(rec)rec.lang=PREF.lang;pickVoice()}savePrefs();render();return}
+  if(t.dataset.cuis){const c=t.dataset.cuis,i=PREF.cuis.indexOf(c);i<0?PREF.cuis.push(c):PREF.cuis.splice(i,1);savePrefs();render();return}
+  if(t.dataset.cf){S.cf=t.dataset.cf;render();return}
+  if(t.dataset.scanmode){S.scanMode=t.dataset.scanmode;render();return}
+  if(t.dataset.clear){const c=t.dataset.clear;
+    if(c==='hist'){HIST=[];saveLS('ska-hist',HIST)}
+    if(c==='airec'){for(let i=RECIPES.length-1;i>=0;i--)if(RECIPES[i].ai)RECIPES.splice(i,1);saveLS('ska-ai-recipes',[]);FAVS=FAVS.filter(id=>RECIPES.some(r=>r.id===id));saveLS('ska-favs',FAVS)}
+    if(c==='all'){if(!confirm('Reset all preferences, keys, history and saved recipes on this device?'))return;['ska-prefs','ska-hist','ska-favs','ska-ai','ska-ai-recipes','ska-photos'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});location.reload();return}
+    caption('Done.','CHEF AI');render();return}
+  if(t.dataset.recipe){openRecipe(t.dataset.recipe);say(`${R().title}. ${ingCount(R())}.`);return}
+  if(t.dataset.say){S.cmds++;command(t.dataset.say);return}
+  if(t.dataset.add){S.found.add(t.dataset.add);render();return}
+  if(t.dataset.rm){S.found.delete(t.dataset.rm);render();return}
+  if(t.dataset.rate){rate(+t.dataset.rate);return}
+  if(t.dataset.canceltid){S.timers=S.timers.filter(x=>String(x.id)!==t.dataset.canceltid);render();return}
+  const a=t.dataset.act;
+  if(a==='talk'||a==='hf'){
+    if(a==='hf'&&(S.screen==='cook'||S.screen==='tasks')){recWanted?stopRec():startRec();return}
+    const ok=startRec();if(!ok)return;S.listenOnce=true;S.handsfree=true;
+    if(S.screen==='home'){const r=$('#homering');r&&r.classList.add('live')}
+    if(S.screen==='adapt')render();
+    say(S.screen==='adapt'?'I’m listening. How should I change the recipe?':S.screen==='scan'?'Listening. Say capture when you’re ready.':'I’m listening. What are you craving?');return}
+  if(a==='settings')return openSettings();
+  if(a==='aigen'){const q=(($('#qin')||{}).value||'').trim();if(!q){$('#qin').focus();caption('Type a dish or cuisine in the search box, then tap again.','CHEF AI');return}S.q=q;return aiGenerate(q)}
+  if(a==='showall'){S.showAll=true;render();return}
+  if(a==='scanup'){$('#scanin').click();return}
+  if(a==='closesheet')return closeSettings();
+  if(a==='savekey')return saveKey();
+  if(a==='removekey')return removeKey();
+  if(a==='photo'){S.photoFor=S.rid;$('#photoin').value='';$('#photoin').click();return}
+  if(a==='capture')return capture();
+  if(a==='scangesture')return scanGesture();
+  if(a==='retrycam')return startCamera('environment');
+  if(a==='demo')return demoScan();
+  if(a==='adapt'){S.adapt=null;go('adapt');startRec();S.listenOnce=true;say('Tell me how you’d like to change this recipe. For example, make it vegetarian and less spicy.');return}
+  if(a==='apply')return applyAdapt();
+  if(a==='cook')return startCooking();
+  if(a==='next')return nextStep();
+  if(a==='prev')return prevStep();
+  if(a==='gest')return toggleGestures();
+  if(a==='steptimer'){const st=R().steps[S.step];if(st.timer&&!S.timers.find(x=>x.name===st.timer[0]&&!x.fired))startStepTimer(false);return go('tasks')}
+  if(a==='finish')return finish();
+  if(a==='exitcook'){S.inCook=false;keepAwake(false);stopStream();S.gestures=false;go('detail');return}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSettings();
+  if(e.key==='Tab'&&$('#sheet').classList.contains('on')){const f=$$('#sheet button,#sheet input'),a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}if(e.key==='Enter'&&e.target.id==='keyin'){saveKey();return}if((e.key==='Enter'||e.key===' ')&&e.target.matches('#hfbar')){e.preventDefault();e.target.click()}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S.stream){/* keep timers, stop camera */stopStream()}});
+
+document.addEventListener('change',e=>{
+  const id=e.target.id;
+  if(id==='namein'){PREF.name=e.target.value.trim();savePrefs();render()}
+  if(id==='allergyin'){PREF.allergy=e.target.value.trim();savePrefs();render()}
+  if(id==='qin'){S.q=e.target.value;S.showAll=false;render();const q=$('#qin');if(q&&S.q){q.focus();q.setSelectionRange(S.q.length,S.q.length)}}
+  if(id==='scanin'&&e.target.files[0]){const f=e.target.files[0],im=new Image(),u=URL.createObjectURL(f);
+    im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);S.upImg=c.toDataURL('image/jpeg',.8).split(',')[1];e.target.value='';Promise.resolve(capture()).finally(()=>{S.upImg=null})};
+    im.onerror=()=>{URL.revokeObjectURL(u);caption('That file couldn’t be read as a photo.','CHEF AI')};im.src=u}if(e.target.id==='photoin'&&e.target.files[0])savePhoto(S.photoFor||S.rid,e.target.files[0])});
+/* ---------- boot ---------- */
+render();
+setTimeout(()=>{if(S.screen==='home')caption('Tap the mic and say “Show me a quick pasta”.','CHEF AI')},600);
+window.__S=S;
+</script>
+</body>
+</html>
